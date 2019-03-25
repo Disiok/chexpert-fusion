@@ -207,8 +207,11 @@ class SiameseDenseNet(torch.nn.Module):
             self.frontal.append(_make_preprocess(3, num_init_features))
             self.lateral.append(_make_preprocess(3, num_init_features))
 
-        # 2. Add DenseBlocks and TransitionBlocks.
         num_features = num_init_features
+        if fusion_index ==  0:
+            num_features = 2 * num_features
+
+        # 2. Add DenseBlocks and TransitionBlocks.
         for i, num_layers in enumerate(block_config, 1):
             if fusion_index >= i:
                 self.lateral.append(_DenseBlock(
@@ -271,10 +274,7 @@ class SiameseDenseNet(torch.nn.Module):
             xs2 = self.lateral[i](xs2)
 
         # 2. Fusion!
-        try:
-            xs = torch.cat([xs1, xs2], dim=1)
-        except:
-            import pdb; pdb.set_trace()
+        xs = torch.cat([xs1, xs2], dim=1)
 
         # 3. Extract after-fusion features.
         for i in range(len(self.lateral), len(self.frontal)):
