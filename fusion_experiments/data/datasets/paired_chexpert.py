@@ -203,7 +203,7 @@ class PairedOnlyCustomSplit(PairedCheXpertDataset):
             raise NotImplementedError
         
 
-if __name__ == '__main__':
+def main()
     class_names = [
         'No Finding',
         'Enlarged Cardiomediastinum',
@@ -222,9 +222,14 @@ if __name__ == '__main__':
     ]
 
     dataset = PairedCheXpertDataset(
-        '/home/kelvin.wong/Datasets/CheXpert-v1.0',
+        '/home/suo/data/CheXpert-v1.0',
         'train',
         class_names,
         None
     )
 
+    import ipdb; ipdb.set_trace()
+
+
+if __name__ == '__main__':
+    main()
