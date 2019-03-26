@@ -46,9 +46,13 @@ def train_fusion_baselines(argv):
     parser.add_argument('--val-data', type=str, required=True)
     parser.add_argument('--val-batch-size', type=int, default=1)
     parser.add_argument('--shuffle', action='store_true', default=False)
+
     # Training
     parser.add_argument('--learning-rate', type=float, default=1e-4)
     parser.add_argument('--fusion-index', type=int, default=-1)
+    parser.add_argument('--normalization', type=str, default='batchnorm2d')
+    parser.add_argument('--activation', type=str, default='relu')
+    parser.add_argument('--criterion', type=str, default='bce_loss')
 
     # IO
     parser.add_argument('--outdir', type=str, required=True)
@@ -72,12 +76,13 @@ def train_fusion_baselines(argv):
     model_configuration = {
         'class'        : 'siamese_densenet121',
         'fusion_index' : args.fusion_index,
-        'normalization': 'batchnorm2d',
-        'activation'   : 'relu',
+        'normalization': args.normalization,
+        'activation'   : args.activation,
     }
 
     criterion_configuration = {
-        'class': 'bce_loss',
+        'class': args.criterion,
+        'gamma': 1,
     }
 
     optimizer_configuration = {

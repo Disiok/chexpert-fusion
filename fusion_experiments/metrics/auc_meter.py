@@ -51,9 +51,13 @@ class AUCMeter(object):
         mask = np.sum(self.targets, axis=0) != 0
         targets = self.targets[:, mask]
         scores = self.scores[:, mask]
-
         auc_scores = np.zeros((len(self.classes),), dtype=np.float32)
-        auc_scores[mask] = sklearn.metrics.roc_auc_score(targets, scores, average=None)
+
+        try:
+            auc_scores[mask] = sklearn.metrics.roc_auc_score(
+                targets, scores, average=None)
+        except ValueError as e:
+            print('Encountered exception: {}.'.format(str(e))
 
         metrics = {'mean': np.mean(auc_scores)}
         for (i, class_name) in enumerate(self.classes):

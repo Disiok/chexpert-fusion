@@ -30,6 +30,10 @@ def _make_normalization(normalization, inputs):
     """
     if normalization == 'batchnorm2d':
         return torch.nn.BatchNorm2d(inputs)
+    elif normalization == 'groupnorm16':
+        return torch.nn.GroupNorm(16, inputs)
+    elif normalization == 'groupnorm32':
+        return torch.nn.GroupNorm(32, inputs)
     else:
         raise Exception('{} normalization does not exist.'.format(normalization))
 
@@ -98,7 +102,9 @@ class _DenseLayer(torch.nn.Module):
                  inputs,
                  growth_rate=32,
                  bn_size=4,
-                 drop_rate=0):
+                 drop_rate=0,
+                 normalization='batchnorm2d',
+                 activation='relu'):
         """
         Initialization.
 
@@ -111,8 +117,13 @@ class _DenseLayer(torch.nn.Module):
             drop_rate   (float): Dropout rate after each dense block.
         """
         super(_DenseLayer, self).__init__()
-        self.conv1 = _make_conv_block(inputs, bn_size * growth_rate, 1)
-        self.conv2 = _make_conv_block(bn_size * growth_rate, growth_rate, 3, padding=1)
+        self.conv1 = _make_conv_block(inputs, bn_size * growth_rate, 1,
+                                      normalization=normalization,
+                                      activation=activation)
+        self.conv2 = _make_conv_block(bn_size * growth_rate, growth_rate, 3, 
+                                      padding=1,
+                                      normalization=normalization,
+                                      activation=activation)
         self.dropout = torch.nn.Dropout2d(p=drop_rate)
 
     def forward(self, xs):
@@ -137,7 +148,9 @@ class _DenseBlock(torch.nn.Sequential):
                  num_layers,
                  bn_size,
                  growth_rate,
-                 drop_rate):
+                 drop_rate,
+                 normalization='batchnorm2d',
+                 activation='relu'):
         """
         Initialization.
 
@@ -151,12 +164,18 @@ class _DenseBlock(torch.nn.Sequential):
                 growth_rate,
                 bn_size,
                 drop_rate,
+                normalization=normalization,
+                activation=activation,
             ))
 
 
 class _Transition(torch.nn.Sequential):
 
-    def __init__(self, inputs, outputs):
+    def __init__(self,
+                 inputs,
+                 outputs,
+                 normalization='batchnorm2d',
+                 activation='relu'):
         """
         Initialization.
 
@@ -164,7 +183,9 @@ class _Transition(torch.nn.Sequential):
 
         """
         super(_Transition, self).__init__()
-        self.add_module('conv', _make_conv_block(inputs, outputs, 1))
+        self.add_module('conv', _make_conv_block(inputs, outputs, 1,
+                                                 normalization=normalization,
+                                                 activation='relu'))
         self.add_module('pool', torch.nn.AvgPool2d(kernel_size=2, stride=2))
 
 
@@ -180,7 +201,9 @@ class SiameseDenseNet(torch.nn.Module):
                  num_init_features=64,
                  bn_size=4,
                  drop_rate=0,
-                 num_classes=1000):
+                 num_classes=1000,
+                 normalization='batchnorm2d',
+                 activation='relu'):
         """
         Initialization.
 
@@ -202,10 +225,22 @@ class SiameseDenseNet(torch.nn.Module):
 
         # 1. Add pre-processing blocks.
         if fusion_index < 0:
-            self.frontal.append(_make_preprocess(6, num_init_features))
+            self.frontal.append(_make_preprocess(
+                6, num_init_features,
+                normalization=normalization,
+                activation=activation
+            ))
         else:
-            self.frontal.append(_make_preprocess(3, num_init_features))
-            self.lateral.append(_make_preprocess(3, num_init_features))
+            self.frontal.append(_make_preprocess(
+                3, num_init_features,
+                normalization=normalization,
+                activation=activation
+            ))
+            self.lateral.append(_make_preprocess(
+                3, num_init_features,
+                normalization=normalization,
+                activation=activation
+            ))
 
         num_features = num_init_features
         if fusion_index ==  0:
@@ -220,6 +255,8 @@ class SiameseDenseNet(torch.nn.Module):
                     bn_size,
                     growth_rate,
                     drop_rate,
+                    normalization=normalization,
+                    activation=activation,
                 ))
 
             self.frontal.append(_DenseBlock(
@@ -228,12 +265,18 @@ class SiameseDenseNet(torch.nn.Module):
                 bn_size,
                 growth_rate,
                 drop_rate,
+                normalization=normalization,
+                activation=activation,
             ))
 
             num_features = num_features + num_layers * growth_rate
             if fusion_index >= i:
-                self.lateral.append(_Transition(num_features, num_features // 2))
-            self.frontal.append(_Transition(num_features, num_features // 2))
+                self.lateral.append(_Transition(num_features, num_features // 2,
+                                                normalization=normalization,
+                                                activation=activation))
+            self.frontal.append(_Transition(num_features, num_features // 2,
+                                            normalization=normalization,
+                                            activation=activation))
 
             num_features = num_features // 2
             if fusion_index == i:
@@ -241,8 +284,8 @@ class SiameseDenseNet(torch.nn.Module):
 
         # 3. Add the classifier.
         self.classifier = torch.nn.Sequential(
-            torch.nn.BatchNorm2d(num_features),
-            torch.nn.ReLU(inplace=True),
+            _make_normalization(normalization, num_features),
+            _make_activation(activation),
             torch.nn.AdaptiveAvgPool2d((1, 1)),
             torch.nn.Conv1d(num_features, num_classes, (1, 1)),
         )
@@ -295,6 +338,8 @@ def make_siamese_densenet121(config):
     model = SiameseDenseNet(
         fusion_index=config['model']['fusion_index'],
         num_classes=len(config['general']['classes']),
+        normalization=config['model']['normalization'],
+        activation=config['model']['activation'],
     )
     return model
 

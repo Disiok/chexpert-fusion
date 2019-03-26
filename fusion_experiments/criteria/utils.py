@@ -10,10 +10,12 @@ from __future__ import absolute_import
 import torch
 
 from criteria import registry
+from criteria.focal_loss import BinaryFocalLoss
 
 
 __all__ = [
-    'make_cross_entropy',
+    'make_bce_loss',
+    'make_focal_loss',
 ]
 
 
@@ -43,4 +45,13 @@ def make_bce_loss(config):
 
     """
     return BCEWithLogitsLoss()
+
+
+@registry.CRITERIA.register('focal_loss')
+def make_focal_loss(config):
+    """
+
+
+    """
+    return BinaryFocalLoss(config['criterion']['gamma'])
 
