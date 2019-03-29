@@ -35,8 +35,11 @@ class BCEWithLogitsLoss(torch.nn.Module):
         """
         losses = torch.nn.functional.binary_cross_entropy_with_logits(
             logits, targets, reduction='none')
-        losses = torch.masked_select(losses, mask.eq(1.))
-        return torch.mean(losses)
+        masked_losses = losses * mask
+        masked_mean = torch.sum(masked_losses, dim=1) / (torch.sum(mask, dim=1) + 1e-8)
+        loss = torch.mean(masked_mean)
+        
+        return loss
 
 
 @registry.CRITERIA.register('bce_loss')

@@ -11,18 +11,17 @@ from collections import OrderedDict
 from models import registry, fusions, backbones
 
 __all__ = [
-    "VolumetricFusionDenseNet",
+    "CrossSectionalFusionDenseNet",
 ]
 
-
-class VolumetricFusionDenseNet(nn.Module):
+class CrossSectionalFusionDenseNet(nn.Module):
     def __init__(self, num_classes=10, num_init_features=64, normalization=None, activation=None):
-        super(VolumetricFusionDenseNet, self).__init__()
+        super(CrossSectionalFusionDenseNet, self).__init__()
 
         self.front_stream = backbones.DenseStream(num_classes=num_classes, num_init_features=num_init_features)
         self.lateral_stream = backbones.DenseStream(num_classes=num_classes, block_config=())
 
-        self.input_fusion = fusions.VolumetricFusion(64)
+        self.input_fusion = fusions.CrossSectionalFusion(64)
 
         # Final batch norm
         self.final_norm = nn.BatchNorm2d(self.front_stream.num_features)
@@ -60,12 +59,12 @@ class VolumetricFusionDenseNet(nn.Module):
 
         return out
 
-@registry.MODELS.register('volumetric_fusion_densenet121')
-def make_volumetric_densenet121(config):
+@registry.MODELS.register('cross_sectional_fusion_densenet121')
+def make_cross_sectional_fusion_densenet121(config):
     """
 
     """
-    model = VolumetricFusionDenseNet(
+    model = CrossSectionalFusionDenseNet(
         num_classes=len(config['general']['classes']),
         normalization=config['model']['normalization'],
         activation=config['model']['activation'],

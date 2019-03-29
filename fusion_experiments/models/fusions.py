@@ -1,5 +1,39 @@
 import torch
 from torch import nn
+from torch.nn import functional as F
+
+
+__all__ = [
+    "CrossSectionalFusion",
+    "VolumetricFusion",
+]
+
+
+class CrossSectionalFusion(nn.Module):
+    def __init__(self, num_input_features):
+        super(CrossSectionalFusion, self).__init__()
+
+        self.frontal_net = nn.Conv2d(num_input_features * 2, num_input_features, kernel_size=1, stride=1, bias=False)
+        self.lateral_net = nn.Conv2d(num_input_features * 2, num_input_features, kernel_size=1, stride=1, bias=False)
+    
+    def forward(self, frontal_features, lateral_features):
+        B, C, H, W = frontal_features.shape
+        B, C, H, D = lateral_features.shape
+
+        frontal_feature_column = F.adaptive_avg_pool2d(frontal_features, (H, 1))
+        lateral_feature_column = F.adaptive_avg_pool2d(lateral_features, (H, 1))
+
+        frontal_transfer = frontal_feature_column.expand(B, C, H, D)
+        lateral_transfer = lateral_feature_column.expand(B, C, H, W)
+
+        frontal_features = torch.cat((frontal_features, lateral_transfer), dim=1)
+        lateral_features = torch.cat((lateral_features, frontal_transfer), dim=1)
+
+        frontal_features = self.frontal_net(frontal_features)
+        lateral_features = self.lateral_net(lateral_features)
+
+        return frontal_features, lateral_features
+
 
 class VolumetricFusion(nn.Module):
     def __init__(self, num_input_features):
@@ -11,7 +45,7 @@ class VolumetricFusion(nn.Module):
             nn.Conv3d(num_input_features * 2, num_input_features, kernel_size=3, stride=1, padding=1, bias=False),
         )
     
-    def to_volumetric(self, frontal_features, lateral_features):
+    def _to_volumetric(self, frontal_features, lateral_features):
         """
         Construct feature volume from frontal and lateral features
 
@@ -39,7 +73,7 @@ class VolumetricFusion(nn.Module):
 
         return concat_features
     
-    def to_multiview(self, feature_volume):
+    def _to_multiview(self, feature_volume):
         """
         Flatten feature volume back to frontal and lateral views
 
@@ -71,7 +105,7 @@ class VolumetricFusion(nn.Module):
             frontal_out (torch.FloatTensor): Frontal features of shape [B, C, H, W]
             lateral_out (torch.FloatTensor): Lateral features of shape [B, C, H, D]
         """
-        feature_volume = self.to_volumetric(frontal_features, lateral_features) # [B, C * 2, D, H, W]
+        feature_volume = self._to_volumetric(frontal_features, lateral_features) # [B, C * 2, D, H, W]
         out_volume = self.net(feature_volume) # [B, C, D, H, W]
-        frontal_out, lateral_out = self.to_multiview(out_volume)
+        frontal_out, lateral_out = self._to_multiview(out_volume)
         return frontal_out, lateral_out
