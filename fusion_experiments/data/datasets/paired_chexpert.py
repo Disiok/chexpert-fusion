@@ -19,10 +19,11 @@ from lib.utils import to_torch
 
 __all__ = [
     'PairedCheXpertDataset',
+    'PairedOnlyCheXpertDataset',
 ]
 
 
-def load_studies(root, mode, class_names):
+def load_studies(root, mode, class_names, paired_only):
     """
     Load a list of studies.
 
@@ -30,6 +31,7 @@ def load_studies(root, mode, class_names):
         root        (str):  Path to root directory.
         mode        (str):  One of `train` or `val`.
         class_names (list): List of class names.
+        paired_only (bool): Whether to filter to only studies with paired images
 
     Returns:
         (list): List of items containing:
@@ -61,8 +63,13 @@ def load_studies(root, mode, class_names):
         is_frontal = row['Frontal/Lateral'] == 'Frontal'
         image_key = 'frontal' if is_frontal else 'lateral'
         patient_to_studies[(patient, study_id)][image_key] = row['Path']
+    
+    studies = patient_to_studies.values()
+    
+    if paired_only:
+        studies = filter(lambda study: study['frontal'] and study['lateral'], studies)
 
-    return patient_to_studies.values()
+    return studies
 
 
 class PairedCheXpertDataset(torch.utils.data.Dataset):
@@ -74,7 +81,8 @@ class PairedCheXpertDataset(torch.utils.data.Dataset):
                  root,
                  mode,
                  classes,
-                 transforms):
+                 transforms,
+                 paired_only=False):
         """
         Initialization.
 
@@ -87,7 +95,7 @@ class PairedCheXpertDataset(torch.utils.data.Dataset):
 
         self.root = root
         self.transforms = transforms
-        self.studies = load_studies(root, mode, classes)
+        self.studies = load_studies(root, mode, classes, paired_only=paired_only)
 
     def _load_image(self, image_fn):
         """
@@ -151,6 +159,18 @@ class PairedCheXpertDataset(torch.utils.data.Dataset):
         """
         return len(self.studies)
 
+
+class PairedOnlyCheXpertDataset(PairedCheXpertDataset):
+    def __init__(self,
+                 root,
+                 mode,
+                 classes,
+                 transforms):
+        super(PairedOnlyCheXpertDataset, self).__init__(root, 
+                                                        mode, 
+                                                        classes, 
+                                                        transforms, 
+                                                        paired_only=True)
 
 if __name__ == '__main__':
     class_names = [
