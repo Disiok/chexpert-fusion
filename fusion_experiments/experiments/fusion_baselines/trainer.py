@@ -353,7 +353,6 @@ class Trainer(object):
         self.auc_meter.reset()
 
         for (step, batch) in enumerate(self.val_dataloader, 1):
-            import pdb; pdb.set_trace()
             if batch is None:
                 print('Encountered empty batch.')
                 continue
