@@ -19,10 +19,11 @@ from lib.utils import to_torch
 
 __all__ = [
     'PairedCheXpertDataset',
+    'PairedOnlyCheXpertDataset',
 ]
 
 
-def load_studies(root, mode, class_names, filter_pairs=False):
+def load_studies(root, mode, class_names, paired_only):
     """
     Load a list of studies.
 
@@ -30,6 +31,7 @@ def load_studies(root, mode, class_names, filter_pairs=False):
         root        (str):  Path to root directory.
         mode        (str):  One of `train` or `val`.
         class_names (list): List of class names.
+        paired_only (bool): Whether to filter to only studies with paired images
 
     Returns:
         (list): List of items containing:
@@ -61,12 +63,11 @@ def load_studies(root, mode, class_names, filter_pairs=False):
         is_frontal = row['Frontal/Lateral'] == 'Frontal'
         image_key = 'frontal' if is_frontal else 'lateral'
         patient_to_studies[(patient, study_id)][image_key] = row['Path']
-
-    studies = []
-    for (patient, study_id), study in patient_to_studies.items():
-        if filter_pairs and (study['frontal'] is None or study['lateral'] is None):
-            continue
-        studies.append(patient_to_studies[(patient, study_id)])
+    
+    studies = patient_to_studies.values()
+    
+    if paired_only:
+        studies = filter(lambda study: study['frontal'] and study['lateral'], studies)
 
     return studies
 
@@ -80,7 +81,8 @@ class PairedCheXpertDataset(torch.utils.data.Dataset):
                  root,
                  mode,
                  classes,
-                 transforms):
+                 transforms,
+                 paired_only=False):
         """
         Initialization.
 
@@ -93,7 +95,7 @@ class PairedCheXpertDataset(torch.utils.data.Dataset):
 
         self.root = root
         self.transforms = transforms
-        self.studies = load_studies(root, mode, classes)
+        self.studies = load_studies(root, mode, classes, paired_only=paired_only)
 
     def _load_image(self, image_fn):
         """
@@ -157,6 +159,49 @@ class PairedCheXpertDataset(torch.utils.data.Dataset):
         """
         return len(self.studies)
 
+
+class PairedOnlyCheXpertDataset(PairedCheXpertDataset):
+    """
+    CheXpert dataset of only studies with paired images
+
+    NOTE(suo): The validation set is only 31 studies
+    """
+    def __init__(self,
+                 root,
+                 mode,
+                 classes,
+                 transforms):
+        super(PairedOnlyCheXpertDataset, self).__init__(root, 
+                                                        mode, 
+                                                        classes, 
+                                                        transforms, 
+                                                        paired_only=True)
+
+class PairedOnlyCustomSplit(PairedCheXpertDataset):
+    """
+    CheXpert dataset of only studies with paired images
+    """
+    def __init__(self,
+                 root,
+                 mode,
+                 classes,
+                 transforms,
+                 custom_split=[30000, 30707, 31413]):
+        super(PairedOnlyCustomSplit, self).__init__(root, 
+                                                    'train', 
+                                                    classes, 
+                                                    transforms)
+        assert sum(custom_split) == len(self.studies)
+        
+        if mode == 'train':
+            self.studies = self.studies[:custom_split[0]]
+        elif mode == 'valid':
+            self.studies = self.studies[custom_split[0]:custom_split[1]]
+        elif mode == 'test':
+            self.studies = self.studies[custom_split[1]:custom_split[2]]
+        else:
+            raise NotImplementedError
+        
 
 if __name__ == '__main__':
     class_names = [
