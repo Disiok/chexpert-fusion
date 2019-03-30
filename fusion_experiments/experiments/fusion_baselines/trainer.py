@@ -93,9 +93,10 @@ class Trainer(object):
         if not self.code_path:
             return
 
-        ROOT_DIR = '/home/suo/dev/chexpert-fusion/'
-        # TODO(suo): Make this configurable
-        # ROOT_DIR = '/home/kelvin.wong/Developer/chexpert-fusion/'
+        # NOTE(suo): Trick to get n-th parent directory
+        uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
+        ROOT_DIR = uppath(__file__, 4)
+
         destination = os.path.join(self.code_path, os.path.basename(ROOT_DIR))
         if os.path.exists(destination):
             shutil.rmtree(destination)

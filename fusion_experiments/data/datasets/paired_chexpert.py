@@ -203,7 +203,7 @@ class PairedOnlyCustomSplit(PairedCheXpertDataset):
             raise NotImplementedError
         
 
-def main()
+def main():
     class_names = [
         'No Finding',
         'Enlarged Cardiomediastinum',
