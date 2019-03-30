@@ -8,11 +8,11 @@ import sklearn.metrics
 
 
 __all__ = [
-    'AUCMeter',
+    'PRMeter',
 ]
 
 
-class AUCMeter(object):
+class PRMeter(object):
 
     def __init__(self, classes):
         """
@@ -21,13 +21,14 @@ class AUCMeter(object):
         Args:
             classes (list): List of classes.
         """
-        super(AUCMeter, self).__init__()
+        super(PRMeter, self).__init__()
+
         self.classes = classes
         self.reset()
 
     def reset(self):
         """
-        Reset AUC meter.
+        Reset PR meter.
         """
         self.masks = np.ndarray((0, len(self.classes)), dtype=np.float32)
         self.scores = np.ndarray((0, len(self.classes)), dtype=np.float32)
@@ -39,8 +40,8 @@ class AUCMeter(object):
 
         Args:
             masks   (np.array): [N x K] binary array.
-            scores  (np.array): [N x K] probability scores.
-            targets (np.array): [N x K] binary targets.
+            scores  (np.array): [N x K] array of prediction scores.
+            targets (np.array): [N] array of target labels.
         """
         self.masks = np.concatenate([self.masks, masks], axis=0)
         self.scores = np.concatenate([self.scores, scores], axis=0)
@@ -74,27 +75,27 @@ class AUCMeter(object):
 
     def values(self):
         """
-        Retrieve AUC metrics.
+        Retrieve AP metrics.
 
         Returns:
-            (dict): Map from class_name to AUC.
+            (dict): Map from class_name to AP.
         """
         metrics = {}
-        total_auc = 0.
+        total_ap = 0.
         num_classes = 0
 
         for class_id, class_name in enumerate(self.classes):
             scores = self.get_scores(class_id)
             targets = self.get_targets(class_id)
-            try:
-                auc = sklearn.metrics.roc_auc_score(targets, scores)
-                total_auc += auc
-                num_classes += 1
-                metrics[class_name] = auc
-            except ValueError as e:
-                metrics[class_name] = 0.0
-                print('Encountered exception: {}.'.format(str(e)))
 
-        metrics['mean'] = total_auc / num_classes
+            ap = sklearn.metrics.average_precision_score(targets, scores)
+            if ap != ap:  # If ap is nan
+                metrics[class_name] = 0.0
+            else:
+                total_ap += ap
+                num_classes += 1
+                metrics[class_name] = ap
+
+        metrics['mean'] = total_ap / num_classes
         return metrics
 

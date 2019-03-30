@@ -22,7 +22,7 @@ __all__ = [
 ]
 
 
-def load_studies(root, mode, class_names):
+def load_studies(root, mode, class_names, filter_pairs=False):
     """
     Load a list of studies.
 
@@ -62,7 +62,13 @@ def load_studies(root, mode, class_names):
         image_key = 'frontal' if is_frontal else 'lateral'
         patient_to_studies[(patient, study_id)][image_key] = row['Path']
 
-    return patient_to_studies.values()
+    studies = []
+    for (patient, study_id), study in patient_to_studies.items():
+        if filter_pairs and (study['frontal'] is None or study['lateral'] is None):
+            continue
+        studies.append(patient_to_studies[(patient, study_id)])
+
+    return studies
 
 
 class PairedCheXpertDataset(torch.utils.data.Dataset):

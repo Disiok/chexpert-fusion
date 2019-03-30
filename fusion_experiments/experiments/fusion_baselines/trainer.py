@@ -23,6 +23,7 @@ from data.utils import make_dataloader
 from lib.utils import to_numpy
 from lib.utils import to_device
 
+from metrics.pr_meter import PRMeter
 from metrics.auc_meter import AUCMeter
 
 
@@ -142,6 +143,7 @@ class Trainer(object):
 
 
         """
+        self.pr_meter = PRMeter(self.classes)
         self.auc_meter = AUCMeter(self.classes)
 
     def _configure_model(self):
@@ -189,7 +191,7 @@ class Trainer(object):
 
 
         """
-        checkpoint_fn = os.path.abspath(checkpoint_path)
+        checkpoint_fn = os.path.abspath(checkpoint_fn)
         checkpoint = torch.load(checkpoint_fn)
 
         self.model.load_state_dict(checkpoint['model_state'])
@@ -347,9 +349,11 @@ class Trainer(object):
 
 
         """
+        self.pr_meter.reset()
         self.auc_meter.reset()
 
         for (step, batch) in enumerate(self.val_dataloader, 1):
+            import pdb; pdb.set_trace()
             if batch is None:
                 print('Encountered empty batch.')
                 continue
@@ -388,9 +392,12 @@ class Trainer(object):
         loss = self.criterion(logits, labels, mask)
         end_forward = time.time()
 
+        mask = to_numpy(batch['mask'])
         labels = to_numpy(batch['labels'].long())
         scores = to_numpy(torch.sigmoid(logits))
-        self.auc_meter.add_predictions(scores, labels)
+
+        self.pr_meter.add_predictions(mask, scores, labels)
+        self.auc_meter.add_predictions(mask, scores, labels)
 
         end_step = time.time()
 
@@ -410,7 +417,7 @@ class Trainer(object):
 
 
         """
-        total_steps = len(self.train_dataloader)
+        total_steps = len(self.val_dataloader)
         log = 'Val Epoch {} [{}/{}]: '.format(self.val_epoch, step, total_steps)
         log += 'Loss - {:.4f} '.format(metrics['metrics']['loss'])
         log += 'Val Time - {:.4f} '.format(metrics['meta']['val_time'])
@@ -418,6 +425,7 @@ class Trainer(object):
         log += 'Learning Rate - {:.4f} '.format(metrics['meta']['learning_rate'])
         log += 'Memory - {} GB '.format(metrics['meta']['memory_allocated'] / 1e9)
         log += 'AUC - {:.4f} '.format(self.auc_meter.values()['mean'])
+        log += 'AP - {:.4f} '.format(self.pr_meter.values()['mean'])
         print(log)
 
         for (key, metric) in metrics['metrics'].items():
@@ -438,3 +446,15 @@ class Trainer(object):
         for (key, metric) in auc_metrics.items():
             name = 'val-metrics/auc-metrics-{}'.format(key)
             self.summary_writer.add_scalar(name, metric, self.val_epoch)
+
+        ap_metrics = self.pr_meter.values()
+        for (key, metric) in ap_metrics.items():
+            name = 'val-metrics/ap-metrics-{}'.format(key)
+            self.summary_writer.add_scalar(name, metric, self.val_epoch)
+
+        for class_id, class_name in enumerate(self.classes):
+            scores = self.pr_meter.get_scores(class_id)
+            targets = self.pr_meter.get_targets(class_id)
+            name = 'val-metrics/pr-curve-{}'.format(class_name)
+            self.summary_writer.add_pr_curve(name, targets, scores, self.val_epoch)
+
