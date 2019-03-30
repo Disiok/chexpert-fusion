@@ -29,3 +29,28 @@ CHEXPERT_CLASSES = [
     'Support Devices',
 ]
 
+# NOTE(suo): No Finding is mutually exclusive will all other classes
+#            except Support Devices
+
+TRAINING_CLASSES = [
+    'Enlarged Cardiomediastinum',
+    'Cardiomegaly',
+    'Lung Opacity',
+    'Lung Lesion',
+    'Edema',
+    'Consolidation',
+    'Pneumonia',
+    'Atelectasis',
+    'Pneumothorax',
+    'Pleural Effusion',
+    'Pleural Other',
+    'Fracture',
+]
+
+PAPER_TRAINING_CLASSES = [
+    'Cardiomegaly',
+    'Edema',
+    'Consolidation',
+    'Atelectasis',
+    'Pleural Effusion',
+]
