@@ -2,9 +2,10 @@
 
 cd /home/suo/dev/chexpert-fusion/fusion_experiments
 python func_run.py train_cross_sectional_fusion \
+    --dataset-class PairedOnlyCustomSplit \
+    --label-class paper \
     --shuffle \
     --cuda-benchmark \
-    --val-frequency 1000 \
     --num-gpus 1 \
     --num-epochs 10 \
     --num-workers 16 \
@@ -13,4 +14,4 @@ python func_run.py train_cross_sectional_fusion \
     --fusion-index 1 \
     --train-data /home/suo/data/CheXpert-v1.0 \
     --val-data /home/suo/data/CheXpert-v1.0 \
-    --outdir /home/suo/experiments/chexpert_cross_sectional_fusion
+    --outdir /home/suo/experiments/chexpert_cross_sectional_fusion_paired_only_custom_split

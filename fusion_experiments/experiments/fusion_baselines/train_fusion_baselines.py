@@ -10,8 +10,6 @@ from __future__ import absolute_import
 import copy
 import argparse
 
-from config.chexpert import CHEXPERT_CLASSES
-
 from experiments import registry
 from experiments.fusion_baselines.trainer import Trainer
 
@@ -41,6 +39,7 @@ def train_fusion_baselines(argv):
     parser.add_argument('--cuda-benchmark', action='store_true', default=False)
 
     # Dataset
+    parser.add_argument('--label-class', type=str, default='default')
     parser.add_argument('--train-data', type=str, required=True)
     parser.add_argument('--train-batch-size', type=int, default=1)
     parser.add_argument('--val-data', type=str, required=True)
@@ -70,7 +69,7 @@ def train_fusion_baselines(argv):
         'num_epochs'    : args.num_epochs,
         'checkpoint'    : args.checkpoint,
         'cuda_benchmark': args.cuda_benchmark,
-        'classes'       : CHEXPERT_CLASSES,
+        'classes'       : args.label_class,
     }
 
     model_configuration = {

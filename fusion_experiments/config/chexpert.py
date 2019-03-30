@@ -10,6 +10,8 @@ from __future__ import absolute_import
 
 __all__ = [
     'CHEXPERT_CLASSES',
+    'TRAINING_CLASSES',
+    'PAPER_TRAINING_CLASSES'
 ]
 
 CHEXPERT_CLASSES = [

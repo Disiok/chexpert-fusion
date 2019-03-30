@@ -13,9 +13,11 @@ import torchvision
 import torch.utils.data
 
 from torch.utils.data.dataloader import default_collate
-from data.datasets.paired_chexpert import PairedCheXpertDataset
+from data.datasets.paired_chexpert import PairedCheXpertDataset, PairedOnlyCheXpertDataset, PairedOnlyCustomSplit 
 from data.transforms.empty_image_transform import EmptyImageTransform
 from data.transforms.pil_image_transform import PILImageTransform
+
+from config.chexpert import CHEXPERT_CLASSES, PAPER_TRAINING_CLASSES
 
 
 __all__ = [
@@ -74,10 +76,25 @@ def make_dataloader(config, mode):
                             config[dataset_key]['image_size']),
     ])
 
-    dataset = PairedCheXpertDataset(
+    # TODO(suo): Migrate this to use registry
+    dataset_class = {
+        'PairedCheXpertDataset': PairedCheXpertDataset,
+        'PairedOnlyCheXpertDataset': PairedOnlyCheXpertDataset,
+        'PairedOnlyCustomSplit': PairedOnlyCustomSplit
+    }[config[dataset_key]['class']]
+
+
+    # TODO(suo): Migrate this to use registry
+    label_classes = {
+        'default': CHEXPERT_CLASSES,
+        'paper': PAPER_TRAINING_CLASSES,
+    }[config['general']['classes']]
+
+
+    dataset = dataset_class(
         config[dataset_key]['dataset_path'],
         mode,
-        config['general']['classes'],
+        label_classes,
         transforms
     )
 

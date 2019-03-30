@@ -177,7 +177,7 @@ class PairedOnlyCheXpertDataset(PairedCheXpertDataset):
                                                         transforms, 
                                                         paired_only=True)
 
-class PairedOnlyCustomSplit(PairedCheXpertDataset):
+class PairedOnlyCustomSplit(PairedOnlyCheXpertDataset):
     """
     CheXpert dataset of only studies with paired images
     """
@@ -186,19 +186,19 @@ class PairedOnlyCustomSplit(PairedCheXpertDataset):
                  mode,
                  classes,
                  transforms,
-                 custom_split=[30000, 30707, 31413]):
+                 custom_split=[30000, 30707]):
         super(PairedOnlyCustomSplit, self).__init__(root, 
                                                     'train', 
                                                     classes, 
                                                     transforms)
-        assert sum(custom_split) == len(self.studies)
+        assert custom_split[0] > 0 and custom_split[-1] < len(self.studies)
         
         if mode == 'train':
             self.studies = self.studies[:custom_split[0]]
         elif mode == 'valid':
             self.studies = self.studies[custom_split[0]:custom_split[1]]
         elif mode == 'test':
-            self.studies = self.studies[custom_split[1]:custom_split[2]]
+            self.studies = self.studies[custom_split[1]:]
         else:
             raise NotImplementedError
         
