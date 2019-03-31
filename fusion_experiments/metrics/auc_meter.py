@@ -95,6 +95,6 @@ class AUCMeter(object):
                 metrics[class_name] = 0.0
                 print('Encountered exception: {}.'.format(str(e)))
 
-        metrics['mean'] = total_auc / num_classes
+        metrics['mean'] = total_auc / (num_classes + 1e-8)
         return metrics
 
