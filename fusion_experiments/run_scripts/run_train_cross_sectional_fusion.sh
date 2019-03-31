@@ -4,7 +4,6 @@ cd /home/suo/dev/chexpert-fusion/fusion_experiments
 python func_run.py train_cross_sectional_fusion \
     --shuffle \
     --cuda-benchmark \
-    --val-frequency 1000 \
     --num-gpus 1 \
     --num-epochs 10 \
     --num-workers 16 \

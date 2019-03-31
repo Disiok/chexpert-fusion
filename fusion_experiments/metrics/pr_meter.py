@@ -88,6 +88,10 @@ class PRMeter(object):
             scores = self.get_scores(class_id)
             targets = self.get_targets(class_id)
 
+            if len(scores) == 0:
+                metrics[class_name] = 0.0
+                continue
+
             ap = sklearn.metrics.average_precision_score(targets, scores)
             if ap != ap:  # If ap is nan
                 metrics[class_name] = 0.0

@@ -26,6 +26,8 @@ from lib.utils import to_device
 from metrics.pr_meter import PRMeter
 from metrics.auc_meter import AUCMeter
 
+from config.chexpert import CHEXPERT_CLASSES, PAPER_TRAINING_CLASSES
+
 
 __all__ = [
 
@@ -49,7 +51,11 @@ class Trainer(object):
         self.use_cuda = self.config['general']['use_cuda']
         self.cuda_benchmark = self.config['general']['cuda_benchmark']
 
-        self.classes = self.config['general']['classes']
+        # TODO(suo): Migrate this to use registry
+        self.classes = {
+            'default': CHEXPERT_CLASSES,
+            'paper': PAPER_TRAINING_CLASSES,
+        }[config['general']['classes']]
         self.num_epochs = self.config['general']['num_epochs']
 
         self.train_epoch = 0

@@ -4,6 +4,7 @@ cd /home/suo/dev/chexpert-fusion/fusion_experiments
 python func_run.py train_cross_sectional_fusion \
     --dataset-class PairedOnlyCustomSplit \
     --label-class paper \
+    --val-frequency 1000 \
     --shuffle \
     --cuda-benchmark \
     --num-gpus 1 \
