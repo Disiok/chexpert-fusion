@@ -13,10 +13,19 @@ import argparse
 from experiments import registry
 from experiments.fusion_baselines.trainer import Trainer
 
+from config.chexpert import CHEXPERT_CLASSES
+from config.chexpert import PAPER_TRAINING_CLASSES
+
 
 __all__ = [
     'train_baselines',
 ]
+
+
+CLASSES = {
+    'default': CHEXPERT_CLASSES,
+    'paper'  : PAPER_TRAINING_CLASSES,
+}
 
 
 @registry.EXPERIMENTS.register('train_baselines')
@@ -72,7 +81,7 @@ def train_baselines(argv):
         'num_epochs'    : args.num_epochs,
         'checkpoint'    : args.checkpoint,
         'cuda_benchmark': args.cuda_benchmark,
-        'classes'       : args.label_class,
+        'classes'       : CLASSES[args.label_class],
     }
 
     model_configuration = {
