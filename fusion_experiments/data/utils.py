@@ -83,18 +83,10 @@ def make_dataloader(config, mode):
         'PairedOnlyCustomSplit': PairedOnlyCustomSplit
     }[config[dataset_key]['class']]
 
-
-    # TODO(suo): Migrate this to use registry
-    label_classes = {
-        'default': CHEXPERT_CLASSES,
-        'paper': PAPER_TRAINING_CLASSES,
-    }[config['general']['classes']]
-
-
     dataset = dataset_class(
         config[dataset_key]['dataset_path'],
         mode,
-        label_classes,
+        config['general']['classes'],
         transforms,
         config[dataset_key]['map_unobserved_to_negative'],
     )
