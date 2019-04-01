@@ -95,7 +95,8 @@ def make_dataloader(config, mode):
         config[dataset_key]['dataset_path'],
         mode,
         label_classes,
-        transforms
+        transforms,
+        config[dataset_key]['map_unobserved_to_negative'],
     )
 
     dataloader = torch.utils.data.DataLoader(

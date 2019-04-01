@@ -23,7 +23,7 @@ __all__ = [
 ]
 
 
-def load_studies(root, mode, class_names, paired_only):
+def load_studies(root, mode, class_names, paired_only, map_unobserved_to_negative):
     """
     Load a list of studies.
 
@@ -43,6 +43,8 @@ def load_studies(root, mode, class_names, paired_only):
             labels   (np.array): [14] binary label array.
     """
     dataset_df = pd.read_csv(os.path.join(root, '{}.csv'.format(mode)))
+    if map_unobserved_to_negative:
+        dataset_df = dataset_df.fillna(0.)
     dataset_df = dataset_df.applymap(lambda x: None if x == -1. else x)
 
     masks = dataset_df[class_names].notnull().as_matrix().astype(np.float32)
@@ -82,6 +84,7 @@ class PairedCheXpertDataset(torch.utils.data.Dataset):
                  mode,
                  classes,
                  transforms,
+                 map_unobserved_to_negative,
                  paired_only=False):
         """
         Initialization.
@@ -95,7 +98,7 @@ class PairedCheXpertDataset(torch.utils.data.Dataset):
 
         self.root = root
         self.transforms = transforms
-        self.studies = load_studies(root, mode, classes, paired_only=paired_only)
+        self.studies = load_studies(root, mode, classes, paired_only, map_unobserved_to_negative)
 
     def _load_image(self, image_fn):
         """
@@ -170,11 +173,13 @@ class PairedOnlyCheXpertDataset(PairedCheXpertDataset):
                  root,
                  mode,
                  classes,
-                 transforms):
+                 transforms,
+                 map_unobserved_to_negative):
         super(PairedOnlyCheXpertDataset, self).__init__(root, 
                                                         mode, 
                                                         classes, 
                                                         transforms, 
+                                                        map_unobserved_to_negative,
                                                         paired_only=True)
 
 class PairedOnlyCustomSplit(PairedOnlyCheXpertDataset):
@@ -186,11 +191,13 @@ class PairedOnlyCustomSplit(PairedOnlyCheXpertDataset):
                  mode,
                  classes,
                  transforms,
+                 map_unobserved_to_negative,
                  custom_split=[30000, 30707]):
         super(PairedOnlyCustomSplit, self).__init__(root, 
                                                     'train', 
                                                     classes, 
-                                                    transforms)
+                                                    transforms,
+                                                    map_unobserved_to_negative)
         assert custom_split[0] > 0 and custom_split[-1] < len(self.studies)
         
         if mode == 'train':

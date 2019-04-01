@@ -41,6 +41,7 @@ def train_baselines(argv):
     # Dataset
     parser.add_argument('--dataset-class', type=str, default='PairedOnlyCustomSplit')
     parser.add_argument('--label-class', type=str, default='default')
+    parser.add_argument('--map-unobserved-to-negative', action='store_true', default=False)
     parser.add_argument('--train-data', type=str, required=True)
     parser.add_argument('--train-batch-size', type=int, default=1)
     parser.add_argument('--val-data', type=str, required=True)
@@ -96,6 +97,7 @@ def train_baselines(argv):
 
     train_data_configuration = {
         'class'         : args.dataset_class,
+        'map_unobserved_to_negative': args.map_unobserved_to_negative,
         'batch_size'    : args.train_batch_size,
         'num_workers'   : args.num_workers,
         'pin_memory'    : args.num_gpus > 0,
