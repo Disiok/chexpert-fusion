@@ -81,7 +81,7 @@ class CrossSectionalAttentionFusion(nn.Module):
 
         frontal_features = torch.cat((frontal_features, lateral_transfer), dim=1)
         lateral_features = torch.cat((lateral_features, frontal_transfer), dim=1)
-        fi
+
         frontal_features = self.frontal_net(frontal_features)
         lateral_features = self.lateral_net(lateral_features)
 

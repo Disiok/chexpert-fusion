@@ -15,4 +15,5 @@ python func_run.py train_cross_sectional_fusion \
     --fusion-index 1 \
     --train-data /home/suo/data/CheXpert-v1.0 \
     --val-data /home/suo/data/CheXpert-v1.0 \
+    --map-unobserved-to-negative \
     --outdir /home/suo/experiments/chexpert_cross_sectional_fusion_paired_only_custom_split

@@ -48,6 +48,7 @@ def train_cross_sectional_fusion(argv):
     parser.add_argument('--val-data', type=str, required=True)
     parser.add_argument('--val-batch-size', type=int, default=1)
     parser.add_argument('--shuffle', action='store_true', default=False)
+    parser.add_argument('--map-unobserved-to-negative', action='store_true', default=False)
 
     # Training
     parser.add_argument('--learning-rate', type=float, default=1e-4)
@@ -104,6 +105,7 @@ def train_cross_sectional_fusion(argv):
         'image_size'    : 320,
         'normalize_mean': [0.485, 0.456, 0.406],
         'normalize_std' : [0.299, 0.224, 0.224],
+        'map_unobserved_to_negative': args.map_unobserved_to_negative
     }
 
     val_data_configuration = copy.deepcopy(train_data_configuration)
