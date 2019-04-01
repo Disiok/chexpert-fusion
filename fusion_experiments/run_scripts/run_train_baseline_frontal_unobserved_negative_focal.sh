@@ -9,6 +9,7 @@ python func_run.py train_baselines \
     --val-frequency 1000 \
     --shuffle \
     --learning-rate 1e-5 \
+    --criterion focal_loss \
     --cuda-benchmark \
     --num-gpus 1 \
     --num-epochs 10 \
@@ -17,4 +18,4 @@ python func_run.py train_baselines \
     --val-batch-size 8 \
     --train-data /home/suo/data/CheXpert-v1.0 \
     --val-data /home/suo/data/CheXpert-v1.0 \
-    --outdir /home/suo/experiments/chexpert_baseline_frontal_unobserved_negative
+    --outdir /home/suo/experiments/chexpert_baseline_frontal_unobserved_negative_focal
