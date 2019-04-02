@@ -63,11 +63,10 @@ class DenseStream(nn.Module):
         bn_size (int) - multiplicative factor for number of bottle neck layers
           (i.e. bn_size * k features in the bottleneck layer)
         drop_rate (float) - dropout rate after each dense layer
-        num_classes (int) - number of classification classes
     """
 
     def __init__(self, growth_rate=32, block_config=(6, 12, 24, 16),
-                 num_init_features=64, bn_size=4, drop_rate=0, num_classes=1000):
+                 num_init_features=64, bn_size=4, drop_rate=0):
 
         super(DenseStream, self).__init__()
 
@@ -80,6 +79,7 @@ class DenseStream(nn.Module):
         ]))
 
         self.blocks = nn.ModuleList([])
+        self.num_features = []
 
         # Each denseblock
         num_features = num_init_features
@@ -91,10 +91,10 @@ class DenseStream(nn.Module):
                 trans = _Transition(num_input_features=num_features, num_output_features=num_features // 2)
                 self.blocks.append(nn.Sequential(block, trans))
                 num_features = num_features // 2
+                self.num_features.append(num_features)
             else:
                 self.blocks.append(block)
-        
-        self.num_features = num_features
+                self.num_features.append(num_features)
     
     def forward(self, x):
         x = self.features(x)

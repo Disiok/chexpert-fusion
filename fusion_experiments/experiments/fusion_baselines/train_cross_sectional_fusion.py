@@ -59,7 +59,7 @@ def train_cross_sectional_fusion(argv):
 
     # Training
     parser.add_argument('--learning-rate', type=float, default=1e-4)
-    parser.add_argument('--fusion-index', type=int, default=-1)
+    parser.add_argument('--fusion-index', type=int, default=0)
     parser.add_argument('--normalization', type=str, default='batchnorm2d')
     parser.add_argument('--activation', type=str, default='relu')
     parser.add_argument('--criterion', type=str, default='bce_loss')
@@ -104,6 +104,7 @@ def train_cross_sectional_fusion(argv):
 
     train_data_configuration = {
         'class'         : args.dataset_class,
+        'map_unobserved_to_negative': args.map_unobserved_to_negative,
         'batch_size'    : args.train_batch_size,
         'num_workers'   : args.num_workers,
         'pin_memory'    : args.num_gpus > 0,

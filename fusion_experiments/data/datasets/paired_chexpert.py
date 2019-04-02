@@ -49,22 +49,24 @@ def load_studies(root, mode, class_names, paired_only, map_unobserved_to_negativ
 
     masks = dataset_df[class_names].notnull().as_matrix().astype(np.float32)
     labels = dataset_df.fillna(0)[class_names].as_matrix().astype(np.float32)
+    paths = dataset_df['Path'].values
+    views = dataset_df['Frontal/Lateral'].values
 
     patient_to_studies = {}
-    for (index, row) in dataset_df.iterrows():
-        _, _, patient, study_id, image_fn = row['Path'].split('/')
+    for ind in range(len(paths)):
+        _, _, patient, study_id, image_fn = paths[ind].split('/')
         if (patient, study_id) not in patient_to_studies:
             patient_to_studies[(patient, study_id)] = {}
             patient_to_studies[(patient, study_id)]['patient'] = patient
             patient_to_studies[(patient, study_id)]['study_id'] = study_id
-            patient_to_studies[(patient, study_id)]['mask'] = masks[index]
-            patient_to_studies[(patient, study_id)]['labels'] = labels[index]
+            patient_to_studies[(patient, study_id)]['mask'] = masks[ind]
+            patient_to_studies[(patient, study_id)]['labels'] = labels[ind]
             patient_to_studies[(patient, study_id)]['frontal'] = None
             patient_to_studies[(patient, study_id)]['lateral'] = None
 
-        is_frontal = row['Frontal/Lateral'] == 'Frontal'
+        is_frontal = views[ind] == 'Frontal'
         image_key = 'frontal' if is_frontal else 'lateral'
-        patient_to_studies[(patient, study_id)][image_key] = row['Path']
+        patient_to_studies[(patient, study_id)][image_key] = paths[ind]
     
     studies = patient_to_studies.values()
     

@@ -15,19 +15,22 @@ __all__ = [
 ]
 
 class CrossSectionalFusionDenseNet(nn.Module):
-    def __init__(self, num_classes=10, num_init_features=64, normalization=None, activation=None):
+    def __init__(self, num_classes=10, num_init_features=64, block_config=(6, 12, 24, 16), normalization=None, activation=None, fusion_index=0):
         super(CrossSectionalFusionDenseNet, self).__init__()
+        assert fusion_index in range(len(block_config) + 1)
+        self.fusion_index = fusion_index
 
-        self.front_stream = backbones.DenseStream(num_classes=num_classes, num_init_features=num_init_features)
-        self.lateral_stream = backbones.DenseStream(num_classes=num_classes, block_config=())
+        self.frontal_stream = backbones.DenseStream(num_init_features=num_init_features, block_config=block_config)
+        self.lateral_stream = backbones.DenseStream(num_init_features=num_init_features, block_config=block_config[:fusion_index])
 
-        self.input_fusion = fusions.CrossSectionalFusion(64)
+        self.input_fusion = fusions.CrossSectionalFusion(num_init_features)
+        self.block_fusions = nn.ModuleList([fusions.CrossSectionalFusion(num_features) for num_features in self.lateral_stream.num_features])
 
         # Final batch norm
-        self.final_norm = nn.BatchNorm2d(self.front_stream.num_features)
+        self.final_norm = nn.BatchNorm2d(self.frontal_stream.num_features[-1])
 
         # Linear layer
-        self.classifier = nn.Linear(self.front_stream.num_features, num_classes)
+        self.classifier = nn.Linear(self.frontal_stream.num_features[-1], num_classes)
 
         # Official init from torch repo.
         for m in self.modules():
@@ -40,14 +43,19 @@ class CrossSectionalFusionDenseNet(nn.Module):
                 nn.init.constant_(m.bias, 0)
 
     def forward(self, frontal, lateral):
-        frontal_features = self.front_stream.features(frontal)
+        frontal_features = self.frontal_stream.features(frontal)
         lateral_features = self.lateral_stream.features(lateral)
 
         # Input fusion
-        frontal_features, _ = self.input_fusion(frontal_features, lateral_features)
+        frontal_features, lateral_features = self.input_fusion(frontal_features, lateral_features)
+
+        # Block fusions
+        for frontal_block, lateral_block, block_fusion in zip(self.frontal_stream.blocks[:self.fusion_index], self.lateral_stream.blocks, self.block_fusions):
+            frontal_features, lateral_features = frontal_block(frontal_features), lateral_block(lateral_features)
+            frontal_features, lateral_features = block_fusion(frontal_features, lateral_features)
 
         # Only run front stream after fusion
-        for frontal_block in self.front_stream.blocks:  
+        for frontal_block in self.frontal_stream.blocks[self.fusion_index:]:  
             frontal_features = frontal_block(frontal_features)
 
         # Classification
@@ -67,6 +75,7 @@ def make_cross_sectional_fusion_densenet121(config):
         num_classes=len(config['general']['classes']),
         normalization=config['model']['normalization'],
         activation=config['model']['activation'],
+        fusion_index=config['model']['fusion_index']
     )
     return model
 

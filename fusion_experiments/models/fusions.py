@@ -14,8 +14,17 @@ class CrossSectionalFusion(nn.Module):
     def __init__(self, num_input_features):
         super(CrossSectionalFusion, self).__init__()
 
-        self.frontal_net = nn.Conv2d(num_input_features * 2, num_input_features, kernel_size=1, stride=1, bias=False)
-        self.lateral_net = nn.Conv2d(num_input_features * 2, num_input_features, kernel_size=1, stride=1, bias=False)
+        self.frontal_net = nn.Sequential(
+            nn.BatchNorm2d(num_input_features * 2),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(num_input_features * 2, num_input_features, kernel_size=1, stride=1, bias=False)
+        )
+
+        self.lateral_net = nn.Sequential(
+            nn.BatchNorm2d(num_input_features * 2),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(num_input_features * 2, num_input_features, kernel_size=1, stride=1, bias=False)
+        )
     
     def forward(self, frontal_features, lateral_features):
         B, C, H, W = frontal_features.shape
