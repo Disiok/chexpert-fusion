@@ -6,8 +6,26 @@ from collections import OrderedDict
 
 __all__ = [
     "CrossSectionalFusion",
+    "CrossSectionalAttentionFusion",
+    "CrossSectionalAttentionFusionV2",
     "VolumetricFusion",
 ]
+
+
+def _make_conv_block(inputs,
+                     outputs,
+                     kernel_size,
+                     padding=0):
+    """
+
+
+
+    """
+    block = nn.Sequential(
+        nn.BatchNorm2d(inputs),
+        nn.ReLU(inplace=True),
+        nn.Conv2d(inputs, outputs, kernel_size=kernel_size, padding=padding, bias=False))
+    return block
 
 
 class CrossSectionalFusion(nn.Module):
@@ -90,7 +108,70 @@ class CrossSectionalAttentionFusion(nn.Module):
 
         frontal_features = torch.cat((frontal_features, lateral_transfer), dim=1)
         lateral_features = torch.cat((lateral_features, frontal_transfer), dim=1)
-        fi
+
+        frontal_features = self.frontal_net(frontal_features)
+        lateral_features = self.lateral_net(lateral_features)
+
+        return frontal_features, lateral_features
+
+
+class CrossSectionalAttentionFusionV2(nn.Module):
+    def __init__(self, num_input_features):
+        super(CrossSectionalAttentionFusionV2, self).__init__()
+
+        self.frontal_net = _make_conv_block(num_input_features * 2, num_input_features, 1)
+        self.lateral_net = _make_conv_block(num_input_features * 2, num_input_features, 1)
+#        self.frontal_net = nn.Conv2d(num_input_features * 2, num_input_features, kernel_size=1, stride=1, bias=False)
+#        self.lateral_net = nn.Conv2d(num_input_features * 2, num_input_features, kernel_size=1, stride=1, bias=False)
+
+        self.frontal_net_attention_mask = nn.Sequential(
+            _make_conv_block(num_input_features * 2, 32, 1),
+            _make_conv_block(32, 1, 1),
+        )
+
+        self.lateral_net_attention_mask = nn.Sequential(
+            _make_conv_block(num_input_features * 2, 32, 1),
+            _make_conv_block(32, 1, 1),
+        )
+
+#        self.frontal_net_attention_mask = nn.Sequential(
+#            nn.Conv2d(num_input_features * 2, 32, kernel_size=1, stride=1, bias=False),
+#            nn.BatchNorm2d(32),
+#            nn.ReLU(inplace=True),
+#            nn.Conv2d(32, 1, kernel_size=1, stride=1, bias=False),
+#            nn.ReLU(inplace=True),
+#        )
+#
+#        self.lateral_net_attention_mask = nn.Sequential(
+#            nn.Conv2d(num_input_features * 2, 32, kernel_size=1, stride=1, bias=False),
+#            nn.BatchNorm2d(32),
+#            nn.ReLU(inplace=True),
+#            nn.Conv2d(32, 1, kernel_size=1, stride=1, bias=False),
+#            nn.ReLU(inplace=True),
+#        )
+
+    def forward(self, frontal_features, lateral_features):
+        B, C, H, W = frontal_features.shape
+        B, C, H, D = lateral_features.shape
+
+        # frontal_feature_column = F.adaptive_avg_pool2d(frontal_features, (H, 1))
+        # lateral_feature_column = F.adaptive_avg_pool2d(lateral_features, (H, 1))
+
+        # frontal_transfer = frontal_feature_column.expand(B, C, H, D)
+        # lateral_transfer = lateral_feature_column.expand(B, C, H, W)
+
+        frontal_mask = self.frontal_net_attention_mask(torch.cat((frontal_features, lateral_features), dim=1))
+        lateral_mask = self.lateral_net_attention_mask(torch.cat((frontal_features, lateral_features), dim=1))
+
+        frontal_mask = F.softmax(frontal_mask, dim=-1)
+        lateral_mask = F.softmax(lateral_mask, dim=-1)
+
+        frontal_transfer = frontal_mask * lateral_features
+        lateral_transfer = lateral_mask * frontal_features
+
+        frontal_features = torch.cat((frontal_features, lateral_transfer), dim=1)
+        lateral_features = torch.cat((lateral_features, frontal_transfer), dim=1)
+
         frontal_features = self.frontal_net(frontal_features)
         lateral_features = self.lateral_net(lateral_features)
 
