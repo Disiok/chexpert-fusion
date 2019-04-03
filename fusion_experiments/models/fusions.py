@@ -264,3 +264,88 @@ class VolumetricFusion(nn.Module):
         out_volume = self.net(feature_volume) # [B, C, D, H, W]
         frontal_out, lateral_out = self._to_multiview(out_volume)
         return frontal_out, lateral_out
+
+
+class VolumetricFusion2D(nn.Module):
+    def __init__(self, num_input_features, feature_size=80):
+        super(VolumetricFusion2D, self).__init__()
+
+        self.frontal_net = nn.Sequential(
+            nn.BatchNorm2d(num_input_features * 2 * feature_size),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(num_input_features * 2 * feature_size, num_input_features, kernel_size=3, stride=1, padding=1, bias=False),
+        )
+
+        self.lateral_net = nn.Sequential(
+            nn.BatchNorm2d(num_input_features * 2 * feature_size),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(num_input_features * 2 * feature_size, num_input_features, kernel_size=3, stride=1, padding=1, bias=False),
+        )
+    
+    def _to_volumetric(self, frontal_features, lateral_features):
+        """
+        Construct feature volume from frontal and lateral features
+
+        Args:
+            frontal_features (torch.FloatTensor): Frontal features of shape [B, C, H, W]
+            lateral_features (torch.FloatTensor): Lateral features of shape [B, C, H, D]
+
+        Returns:
+            feature_volume (torch.FloatTensor): Feature volume of shape [B, C * 2, D, H, W]
+        """
+        B, C, H, W = frontal_features.shape
+        B, C, H, D = lateral_features.shape
+
+        # [B, C, D, H, W]
+        frontal_features_3D = frontal_features.unsqueeze(2).expand(-1, -1, D, -1, -1)
+        
+        # relative to front view: [B, C, W, H, D]
+        lateral_features_3D = lateral_features.unsqueeze(2).expand(-1, -1, W, -1, -1)
+        
+        # transpose to orient it: [B, C, D, H, W]
+        transposed_lateral = lateral_features_3D.permute(0, 1, 4, 3, 2)
+
+        # Concat on channel dimension
+        concat_features = torch.cat((frontal_features_3D, transposed_lateral), dim=1)
+
+        return concat_features
+
+    def _to_multiview(self, feature_volume):
+        """
+        Flatten feature volume back to frontal and lateral views
+
+        Args:
+            feature_volume (torch.FloatTensor): Feature volume of shape [B, C, D, H, W]
+
+        Returns:
+            frontal_features (torch.FloatTensor): Frontal features of shape [B, C * D, H, W]
+            lateral_features (torch.FloatTensor): Lateral features of shape [B, C * W, H, D]
+        """
+        B, C, D, H, W = feature_volume.shape
+
+        frontal_view = feature_volume.view(B, C * D, H, W)
+        lateral_view = feature_volume.permute(0, 1, 4, 3, 2).contiguous().view(B, C * W, H, D)
+
+        return frontal_view, lateral_view
+        
+    def forward(self, frontal_features, lateral_features):
+        """
+        Construct feature volume, apply 3D convolution, 
+        and flatten back to frontal and lateral views
+
+        Args:
+            frontal_features (torch.FloatTensor): Frontal features of shape [B, C, H, W]
+            lateral_features (torch.FloatTensor): Lateral features of shape [B, C, H, D]
+
+        Returns:
+            frontal_out (torch.FloatTensor): Frontal features of shape [B, C, H, W]
+            lateral_out (torch.FloatTensor): Lateral features of shape [B, C, H, D]
+        """
+
+        feature_volume = self._to_volumetric(frontal_features, lateral_features) # [B, C * 2, D, H, W]
+        frontal_view, lateral_view = self._to_multiview(feature_volume)
+
+        frontal_out = self.frontal_net(frontal_view)
+        lateral_out = self.lateral_net(lateral_view)
+
+        return frontal_out, lateral_out
