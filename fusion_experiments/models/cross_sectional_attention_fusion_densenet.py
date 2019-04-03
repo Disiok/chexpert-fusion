@@ -24,10 +24,10 @@ class CrossSectionalAttentionFusionDenseNet(nn.Module):
         self.input_fusion = fusions.CrossSectionalAttentionFusion(64)
 
         # Final batch norm
-        self.final_norm = nn.BatchNorm2d(self.front_stream.num_features)
+        self.final_norm = nn.BatchNorm2d(self.front_stream.num_features[-1])
 
         # Linear layer
-        self.classifier = nn.Linear(self.front_stream.num_features, num_classes)
+        self.classifier = nn.Linear(self.front_stream.num_features[-1], num_classes)
 
         # Official init from torch repo.
         for m in self.modules():

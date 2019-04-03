@@ -64,7 +64,7 @@ def make_dataloader(config, mode):
 
 
     """
-    assert(mode in ['train', 'valid']), '{} is not valid'.format(mode)
+    assert(mode in ['train', 'valid', 'test']), '{} is not valid'.format(mode)
     dataset_key = 'train_data' if mode == 'train' else 'val_data'
 
     transforms = torchvision.transforms.Compose([

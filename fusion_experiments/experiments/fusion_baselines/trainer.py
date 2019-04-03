@@ -188,6 +188,7 @@ class Trainer(object):
         """
         self.train_dataloader = make_dataloader(self.config, mode='train')
         self.val_dataloader = make_dataloader(self.config, mode='valid')
+        self.test_dataloader = make_dataloader(self.config, mode='test')
 
     def _load_checkpoint(self, checkpoint_fn):
         """
@@ -249,12 +250,12 @@ class Trainer(object):
             self.train_single_epoch()
             self.val_single_epoch()
 
-    def evaluate(self):
+    def evaluate(self, use_test_set=False):
         """
 
 
         """
-        self.val_single_epoch()
+        self.val_single_epoch(use_test_set=use_test_set)
 
     def train_single_epoch(self):
         """
@@ -346,7 +347,7 @@ class Trainer(object):
             name = 'train-meta/{}'.format(key)
             self.summary_writer.add_scalar(name, metric, self.global_train_step)
 
-    def val_single_epoch(self):
+    def val_single_epoch(self, use_test_set=False):
         """
 
 
@@ -355,7 +356,8 @@ class Trainer(object):
         self.pr_meter.reset()
         self.auc_meter.reset()
 
-        for (step, batch) in enumerate(self.val_dataloader, 1):
+        dataloader = self.test_dataloader if use_test_set else self.val_dataloader
+        for (step, batch) in enumerate(dataloader, 1):
             if batch is None:
                 print('Encountered empty batch.')
                 continue
