@@ -179,14 +179,27 @@ class CrossSectionalAttentionFusionV2(nn.Module):
 
 
 class VolumetricFusion(nn.Module):
-    def __init__(self, num_input_features):
+    def __init__(self, num_input_features, is_big=False):
         super(VolumetricFusion, self).__init__()
 
-        self.net = nn.Sequential(
-            nn.BatchNorm3d(num_input_features * 2),
-            nn.ReLU(inplace=True),
-            nn.Conv3d(num_input_features * 2, num_input_features, kernel_size=3, stride=1, padding=1, bias=False),
-        )
+        if is_big:
+            self.net = nn.Sequential(
+                nn.BatchNorm3d(num_input_features * 2),
+                nn.ReLU(inplace=True),
+                nn.Conv3d(num_input_features * 2, num_input_features, kernel_size=3, stride=1, padding=1, bias=False),
+                nn.BatchNorm3d(num_input_features),
+                nn.ReLU(inplace=True),
+                nn.Conv3d(num_input_features, num_input_features, kernel_size=3, stride=1, padding=1, bias=False),
+                nn.BatchNorm3d(num_input_features),
+                nn.ReLU(inplace=True),
+                nn.Conv3d(num_input_features, num_input_features, kernel_size=3, stride=1, padding=1, bias=False),
+            )
+        else:
+            self.net = nn.Sequential(
+                nn.BatchNorm3d(num_input_features * 2),
+                nn.ReLU(inplace=True),
+                nn.Conv3d(num_input_features * 2, num_input_features, kernel_size=3, stride=1, padding=1, bias=False),
+            )
     
     def _to_volumetric(self, frontal_features, lateral_features):
         """
