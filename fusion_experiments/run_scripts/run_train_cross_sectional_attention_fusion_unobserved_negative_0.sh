@@ -5,7 +5,7 @@ python func_run.py train_cross_sectional_attention_fusion \
     --dataset-class PairedOnlyCustomSplit \
     --label-class paper \
     --map-unobserved-to-negative \
-    --fusion-index 4 \
+    --fusion-index 0 \
     --val-frequency 1000 \
     --shuffle \
     --cuda-benchmark \
@@ -16,4 +16,4 @@ python func_run.py train_cross_sectional_attention_fusion \
     --val-batch-size 8 \
     --train-data /home/kelvin.wong/Datasets/CheXpert-v1.0 \
     --val-data /home/kelvin.wong/Datasets/CheXpert-v1.0 \
-    --outdir /home/kelvin.wong/experiments/chexpert_cross_sectional_attention_fusion_unobserved_negative_4_v2/
+    --outdir /home/kelvin.wong/experiments/chexpert_cross_sectional_attention_fusion_unobserved_negative_0/
