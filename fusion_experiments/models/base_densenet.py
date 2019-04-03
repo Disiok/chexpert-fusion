@@ -19,13 +19,13 @@ class BaseDenset(nn.Module):
         super(BaseDenset, self).__init__()
         assert view in ['frontal', 'lateral']
         self.view = view
-        self.feature_net = backbones.DenseStream(num_classes=num_classes, num_init_features=num_init_features)
+        self.feature_net = backbones.DenseStream(num_init_features=num_init_features)
 
         # Final batch norm
-        self.final_norm = nn.BatchNorm2d(self.feature_net.num_features)
+        self.final_norm = nn.BatchNorm2d(self.feature_net.num_features[-1])
 
         # Linear layer
-        self.classifier = nn.Linear(self.feature_net.num_features, num_classes)
+        self.classifier = nn.Linear(self.feature_net.num_features[-1], num_classes)
 
         # Official init from torch repo.
         for m in self.modules():

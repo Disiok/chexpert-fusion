@@ -19,16 +19,16 @@ class VolumetricFusionDenseNet(nn.Module):
     def __init__(self, num_classes=10, num_init_features=64, normalization=None, activation=None):
         super(VolumetricFusionDenseNet, self).__init__()
 
-        self.front_stream = backbones.DenseStream(num_classes=num_classes, num_init_features=num_init_features)
-        self.lateral_stream = backbones.DenseStream(num_classes=num_classes, block_config=())
+        self.front_stream = backbones.DenseStream(num_init_features=num_init_features)
+        self.lateral_stream = backbones.DenseStream(block_config=())
 
         self.input_fusion = fusions.VolumetricFusion(64)
 
         # Final batch norm
-        self.final_norm = nn.BatchNorm2d(self.front_stream.num_features)
+        self.final_norm = nn.BatchNorm2d(self.front_stream.num_features[-1])
 
         # Linear layer
-        self.classifier = nn.Linear(self.front_stream.num_features, num_classes)
+        self.classifier = nn.Linear(self.front_stream.num_features[-1], num_classes)
 
         # Official init from torch repo.
         for m in self.modules():

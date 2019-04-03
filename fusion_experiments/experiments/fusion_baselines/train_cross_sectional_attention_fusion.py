@@ -45,6 +45,7 @@ def train_cross_sectional_fusion(argv):
     parser.add_argument('--num-workers', type=int, default=8)
     parser.add_argument('--checkpoint', type=str, default=None)
     parser.add_argument('--evaluate-once', action='store_true', default=False)
+    parser.add_argument('--use-test-set', action='store_true', default=False)
     parser.add_argument('--cuda-benchmark', action='store_true', default=False)
 
     # Dataset
@@ -137,5 +138,6 @@ def train_cross_sectional_fusion(argv):
     }
 
     trainer = Trainer(configuration)
-    trainer.evaluate() if args.evaluate_once else trainer.train()
+    trainer.evaluate(args.use_test_set) if args.evaluate_once else trainer.train()
+
 
