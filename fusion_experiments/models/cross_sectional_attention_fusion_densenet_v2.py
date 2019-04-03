@@ -28,11 +28,13 @@ class CrossSectionalAttentionFusionDenseNetV2(nn.Module):
 
         # Final batch norm
         self.final_norm_frontal = nn.BatchNorm2d(self.frontal_stream.num_features[-1])
-        #self.final_norm_lateral = nn.BatchNorm2d(self.lateral_stream.num_features[-1])
+        if fusion_index == 4:
+            self.final_norm_lateral = nn.BatchNorm2d(self.lateral_stream.num_features[-1])
 
         # Linear layer
         self.classifier_frontal = nn.Linear(self.frontal_stream.num_features[-1], num_classes)
-        #self.classifier_lateral = nn.Linear(self.lateral_stream.num_features[-1], num_classes)
+        if fusion_index == 4:
+            self.classifier_lateral = nn.Linear(self.lateral_stream.num_features[-1], num_classes)
 
         # Official init from torch repo.
         for m in self.modules():
@@ -65,7 +67,15 @@ class CrossSectionalAttentionFusionDenseNetV2(nn.Module):
         frontal_out = F.relu(frontal_features, inplace=True)
         frontal_out = F.adaptive_avg_pool2d(frontal_out, (1, 1)).view(frontal_features.size(0), -1)
         frontal_out = self.classifier_frontal(frontal_out)
-        return frontal_out
+
+        if self.fusion_index < 4:
+            return frontal_out
+        elif self.fusion_index == 4:
+            lateral_features = self.final_norm_lateral(lateral_features)
+            lateral_out = F.relu(lateral_features, inplace=True)
+            lateral_out = F.adaptive_avg_pool2d(lateral_out, (1, 1)).view(lateral_features.size(0), -1)
+            lateral_out = self.classifier_lateral(lateral_out)
+            return frontal_out + lateral_out
 
 @registry.MODELS.register('cross_sectional_attention_fusion_densenet121_v2')
 def make_cross_sectional_attention_fusion_densenet121(config):
