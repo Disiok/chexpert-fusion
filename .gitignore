@@ -2,3 +2,4 @@
 *.swp
 /runs
 .vscode
+notebooks/.ipynb_checkpoints/
