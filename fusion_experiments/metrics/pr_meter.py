@@ -100,6 +100,6 @@ class PRMeter(object):
                 num_classes += 1
                 metrics[class_name] = ap
 
-        metrics['mean'] = total_ap / num_classes
+        metrics['mean'] = total_ap / (num_classes + 1e-8)
         return metrics
 

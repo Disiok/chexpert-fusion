@@ -45,11 +45,13 @@ def train_cross_sectional_fusion(argv):
     parser.add_argument('--num-workers', type=int, default=8)
     parser.add_argument('--checkpoint', type=str, default=None)
     parser.add_argument('--evaluate-once', action='store_true', default=False)
+    parser.add_argument('--use-test-set', action='store_true', default=False)
     parser.add_argument('--cuda-benchmark', action='store_true', default=False)
 
     # Dataset
     parser.add_argument('--dataset-class', type=str, default='PairedOnlyCustomSplit')
     parser.add_argument('--label-class', type=str, default='default')
+    parser.add_argument('--map-unobserved-to-negative', action='store_true', default=False)
     parser.add_argument('--train-data', type=str, required=True)
     parser.add_argument('--train-batch-size', type=int, default=1)
     parser.add_argument('--val-data', type=str, required=True)
@@ -59,7 +61,7 @@ def train_cross_sectional_fusion(argv):
 
     # Training
     parser.add_argument('--learning-rate', type=float, default=1e-4)
-    parser.add_argument('--fusion-index', type=int, default=-1)
+    parser.add_argument('--fusion-index', type=int, default=0)
     parser.add_argument('--normalization', type=str, default='batchnorm2d')
     parser.add_argument('--activation', type=str, default='relu')
     parser.add_argument('--criterion', type=str, default='bce_loss')
@@ -84,7 +86,7 @@ def train_cross_sectional_fusion(argv):
     }
 
     model_configuration = {
-        'class'        : 'cross_sectional_attention_fusion_densenet121',
+        'class'        : 'cross_sectional_attention_fusion_densenet121_v2',
         'fusion_index' : args.fusion_index,
         'normalization': args.normalization,
         'activation'   : args.activation,
@@ -104,6 +106,7 @@ def train_cross_sectional_fusion(argv):
 
     train_data_configuration = {
         'class'         : args.dataset_class,
+        'map_unobserved_to_negative': args.map_unobserved_to_negative,
         'batch_size'    : args.train_batch_size,
         'num_workers'   : args.num_workers,
         'pin_memory'    : args.num_gpus > 0,
@@ -137,5 +140,6 @@ def train_cross_sectional_fusion(argv):
     }
 
     trainer = Trainer(configuration)
-    trainer.evaluate() if args.evaluate_once else trainer.train()
+    trainer.evaluate(args.use_test_set) if args.evaluate_once else trainer.train()
+
 

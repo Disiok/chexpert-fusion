@@ -1,2 +1,2 @@
-# Course Project for ML4health
-Multi-view fusion based models for CheXpert
+# Look Twice: Multiview Fusion for Chest Medical Imaging
+##  Course Project for ML4health
