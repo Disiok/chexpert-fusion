@@ -19,9 +19,9 @@ class CrossSectionalAttentionFusionDenseNet(nn.Module):
         super(CrossSectionalAttentionFusionDenseNet, self).__init__()
 
         self.front_stream = backbones.DenseStream(num_classes=num_classes, num_init_features=num_init_features)
-        self.lateral_stream = backbones.DenseStream(num_classes=num_classes, block_config=())
+        self.lateral_stream = backbones.DenseStream(num_classes=num_classes, num_init_features=num_init_features)
 
-        self.input_fusion = fusions.CrossSectionalAttentionFusion(64)
+        self.input_fusion = fusions.CrossSectionalAttentionFusion(512)
 
         # Final batch norm
         self.final_norm = nn.BatchNorm2d(self.front_stream.num_features)
@@ -44,10 +44,17 @@ class CrossSectionalAttentionFusionDenseNet(nn.Module):
         lateral_features = self.lateral_stream.features(lateral)
 
         # Input fusion
+        # frontal_features, lateral_features = self.input_fusion(frontal_features, lateral_features)
+
+        for frontal_block in self.front_stream.blocks[0:3]:
+            frontal_features = frontal_block(frontal_features)
+
+        for lateral_block in self.lateral_stream.blocks[0:3]:
+            lateral_features = lateral_block(lateral_features)
+
         frontal_features, lateral_features = self.input_fusion(frontal_features, lateral_features)
 
-        # Only run front stream after fusion
-        for frontal_block in self.front_stream.blocks:
+        for frontal_block in self.front_stream.blocks[3:]:
             frontal_features = frontal_block(frontal_features)
 
         # Classification

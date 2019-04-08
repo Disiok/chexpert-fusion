@@ -37,7 +37,58 @@ class CrossSectionalFusion(nn.Module):
         return frontal_features, lateral_features
 
 
-class CrossSectionalAttentionFusion(nn.Module):
+# class CrossSectionalAttentionFusion(nn.Module):
+#     def __init__(self, num_input_features):
+#         super(CrossSectionalAttentionFusion, self).__init__()
+#
+#         self.frontal_net = nn.Conv2d(num_input_features * 2, num_input_features, kernel_size=1, stride=1, bias=False)
+#         self.lateral_net = nn.Conv2d(num_input_features * 2, num_input_features, kernel_size=1, stride=1, bias=False)
+#
+#         self.frontal_net_attention_mask = nn.Sequential(
+#             nn.Conv2d(num_input_features * 2, 32, kernel_size=1, stride=1, bias=False),
+#             nn.BatchNorm2d(32),
+#             nn.ReLU(inplace=True),
+#             nn.Conv2d(32, 1, kernel_size=1, stride=1, bias=False),
+#             nn.ReLU(inplace=True),
+#         )
+#
+#         self.lateral_net_attention_mask = nn.Sequential(
+#             nn.Conv2d(num_input_features * 2, 32, kernel_size=1, stride=1, bias=False),
+#             nn.BatchNorm2d(32),
+#             nn.ReLU(inplace=True),
+#             nn.Conv2d(32, 1, kernel_size=1, stride=1, bias=False),
+#             nn.ReLU(inplace=True),
+#         )
+#
+#     def forward(self, frontal_features, lateral_features):
+#         B, C, H, W = frontal_features.shape
+#         B, C, H, D = lateral_features.shape
+#
+#         # frontal_feature_column = F.adaptive_avg_pool2d(frontal_features, (H, 1))
+#         # lateral_feature_column = F.adaptive_avg_pool2d(lateral_features, (H, 1))
+#
+#         # frontal_transfer = frontal_feature_column.expand(B, C, H, D)
+#         # lateral_transfer = lateral_feature_column.expand(B, C, H, W)
+#
+#         frontal_mask = self.frontal_net_attention_mask(torch.cat((frontal_features, lateral_features), dim=1))
+#         lateral_mask = self.lateral_net_attention_mask(torch.cat((frontal_features, lateral_features), dim=1))
+#
+#         frontal_mask = F.softmax(frontal_mask, dim=-1)
+#         lateral_mask = F.softmax(lateral_mask, dim=-1)
+#
+#         frontal_transfer = frontal_mask * lateral_features
+#         lateral_transfer = lateral_mask * frontal_features
+#
+#         frontal_features = torch.cat((frontal_features, lateral_transfer), dim=1)
+#         lateral_features = torch.cat((lateral_features, frontal_transfer), dim=1)
+#
+#         frontal_features = self.frontal_net(frontal_features)
+#         lateral_features = self.lateral_net(lateral_features)
+#
+#         return frontal_features, lateral_features
+
+
+class CrossSectionalAttentionFusion(nn.Module):  # fix
     def __init__(self, num_input_features):
         super(CrossSectionalAttentionFusion, self).__init__()
 
@@ -61,8 +112,13 @@ class CrossSectionalAttentionFusion(nn.Module):
         )
 
     def forward(self, frontal_features, lateral_features):
+        # frontal_features = torch.ones([2, 64, 80, 80], dtype=torch.float32)
+        # lateral_features = torch.ones([2, 64, 80, 80], dtype=torch.float32)
+
         B, C, H, W = frontal_features.shape
-        B, C, H, D = lateral_features.shape
+
+        front_mask = torch.zeros([B, 1, H, W, W], dtype=torch.float32).cuda()
+        lateral_transfer = torch.zeros([B, C, H, W], dtype=torch.float32).cuda()
 
         # frontal_feature_column = F.adaptive_avg_pool2d(frontal_features, (H, 1))
         # lateral_feature_column = F.adaptive_avg_pool2d(lateral_features, (H, 1))
@@ -70,20 +126,30 @@ class CrossSectionalAttentionFusion(nn.Module):
         # frontal_transfer = frontal_feature_column.expand(B, C, H, D)
         # lateral_transfer = lateral_feature_column.expand(B, C, H, W)
 
-        frontal_mask = self.frontal_net_attention_mask(torch.cat((frontal_features, lateral_features), dim=1))
-        lateral_mask = self.lateral_net_attention_mask(torch.cat((frontal_features, lateral_features), dim=1))
+        for ii in range(W):
+            for jj in range(W):
+                front_mask[:, :, :, ii, jj] = (frontal_features[:, :, :, ii] * lateral_features[:, :, :, jj]).norm()
 
-        frontal_mask = F.softmax(frontal_mask, dim=-1)
-        lateral_mask = F.softmax(lateral_mask, dim=-1)
+        front_mask = F.softmax(front_mask, dim=-1)
 
-        frontal_transfer = frontal_mask * lateral_features
-        lateral_transfer = lateral_mask * frontal_features
+        for ii in range(H):
+            for jj in range(W):
+                lateral_transfer[:, :, ii, jj] = (lateral_features[:, :, ii, :] * front_mask[:, :, ii, jj, :]).sum(dim=-1)
+
+        # frontal_mask = self.frontal_net_attention_mask(torch.cat((frontal_features, lateral_features), dim=1))
+        # lateral_mask = self.lateral_net_attention_mask(torch.cat((frontal_features, lateral_features), dim=1))
+        #
+        # frontal_mask = F.softmax(frontal_mask, dim=-1)
+        # lateral_mask = F.softmax(lateral_mask, dim=-1)
+
+        # frontal_transfer = frontal_mask * lateral_features
+        # lateral_transfer = lateral_mask * frontal_features
 
         frontal_features = torch.cat((frontal_features, lateral_transfer), dim=1)
-        lateral_features = torch.cat((lateral_features, frontal_transfer), dim=1)
+        # lateral_features = torch.cat((lateral_features, frontal_transfer), dim=1)
 
         frontal_features = self.frontal_net(frontal_features)
-        lateral_features = self.lateral_net(lateral_features)
+        # lateral_features = self.lateral_net(lateral_features)
 
         return frontal_features, lateral_features
 
