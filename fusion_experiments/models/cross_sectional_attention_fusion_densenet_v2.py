@@ -23,18 +23,22 @@ class CrossSectionalAttentionFusionDenseNetV2(nn.Module):
         self.frontal_stream = backbones.DenseStream(num_init_features=num_init_features, block_config=block_config)
         self.lateral_stream = backbones.DenseStream(num_init_features=num_init_features, block_config=block_config[:fusion_index])
 
-        self.input_fusion = fusions.CrossSectionalAttentionFusionV2(num_init_features)
-        self.block_fusions = nn.ModuleList([fusions.CrossSectionalAttentionFusionV2(num_features) for num_features in self.lateral_stream.num_features])
+        WIDTH = int(320 // 4)
+        self.input_fusion = fusions.CrossSectionalAttentionFusionV2(num_init_features, WIDTH)
+        self.block_fusions = nn.ModuleList([])
+
+        for i, num_features in enumerate(self.lateral_stream.num_features):
+            if i != len(self.lateral_stream.num_features) - 1:
+                WIDTH = int(WIDTH // 2)
+            self.block_fusions.append(fusions.CrossSectionalAttentionFusionV2(num_features, WIDTH))
 
         # Final batch norm
         self.final_norm_frontal = nn.BatchNorm2d(self.frontal_stream.num_features[-1])
-        if fusion_index == 4:
-            self.final_norm_lateral = nn.BatchNorm2d(self.lateral_stream.num_features[-1])
+        self.final_norm_lateral = nn.BatchNorm2d(self.lateral_stream.num_features[-1])
 
         # Linear layer
         self.classifier_frontal = nn.Linear(self.frontal_stream.num_features[-1], num_classes)
-        if fusion_index == 4:
-            self.classifier_lateral = nn.Linear(self.lateral_stream.num_features[-1], num_classes)
+        self.classifier_lateral = nn.Linear(self.lateral_stream.num_features[-1], num_classes)
 
         # Official init from torch repo.
         for m in self.modules():
@@ -58,7 +62,7 @@ class CrossSectionalAttentionFusionDenseNetV2(nn.Module):
             frontal_features, lateral_features = frontal_block(frontal_features), lateral_block(lateral_features)
             frontal_features, lateral_features = block_fusion(frontal_features, lateral_features)
 
-        # Only run front stream after fusion
+        # Only run front stream after fusion - this is no-op
         for frontal_block in self.frontal_stream.blocks[self.fusion_index:]:
             frontal_features = frontal_block(frontal_features)
 
@@ -67,19 +71,19 @@ class CrossSectionalAttentionFusionDenseNetV2(nn.Module):
         frontal_out = F.relu(frontal_features, inplace=True)
         frontal_out = F.adaptive_avg_pool2d(frontal_out, (1, 1)).view(frontal_features.size(0), -1)
         frontal_out = self.classifier_frontal(frontal_out)
+        return frontal_out
 
-        if self.fusion_index < 4:
-            return frontal_out
-        elif self.fusion_index == 4:
-            lateral_features = self.final_norm_lateral(lateral_features)
-            lateral_out = F.relu(lateral_features, inplace=True)
-            lateral_out = F.adaptive_avg_pool2d(lateral_out, (1, 1)).view(lateral_features.size(0), -1)
-            lateral_out = self.classifier_lateral(lateral_out)
-            return frontal_out + lateral_out
+#        lateral_features = self.final_norm_lateral(lateral_features)
+#        lateral_out = F.relu(lateral_features, inplace=True)
+#        lateral_out = F.adaptive_avg_pool2d(lateral_out, (1, 1)).view(lateral_features.size(0), -1)
+#        lateral_out = self.classifier_lateral(lateral_out)
+#        return frontal_out + lateral_out
+
 
 @registry.MODELS.register('cross_sectional_attention_fusion_densenet121_v2')
 def make_cross_sectional_attention_fusion_densenet121(config):
     """
+
 
     """
     model = CrossSectionalAttentionFusionDenseNetV2(

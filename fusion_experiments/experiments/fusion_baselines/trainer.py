@@ -367,6 +367,12 @@ class Trainer(object):
                     metrics = self._val_single_step(batch)
                     self._log_val_step(step, metrics)
                     self.global_val_step += 1
+
+                for result in metrics['results']:
+                    study_id = result['study_id']
+                    patient_id = result['patient']
+                    fn = '{}_{}.pth.tar'.format(patient_id, study_id)
+                    torch.save(result, os.path.join(self.predictions_path, fn))
             except RuntimeError as e:
                 print('WARNING: encountered exception {}'.format(str(e)))
                 self.optimizer.zero_grad()
@@ -403,6 +409,19 @@ class Trainer(object):
         self.pr_meter.add_predictions(mask, scores, labels)
         self.auc_meter.add_predictions(mask, scores, labels)
 
+        results = []
+        if self.save_predictions:
+            for i in range(len(labels)):
+                results.append({
+                    'patient' : batch['patient'][i],
+                    'study_id': batch['study_id'][i],
+                    'frontal' : batch['frontal_fn'][i],
+                    'lateral' : batch['lateral_fn'][i],
+                    'labels'  : labels[i],
+                    'mask'    : mask[i],
+                    'scores'  : scores[i],
+                })
+
         end_step = time.time()
 
         meta = {}
@@ -413,7 +432,7 @@ class Trainer(object):
 
         metrics = {}
         metrics['loss'] = loss.item()
-        return {'meta': meta, 'metrics': metrics}
+        return {'meta': meta, 'metrics': metrics, 'results': results}
 
     def _log_val_step(self, step, metrics):
         """

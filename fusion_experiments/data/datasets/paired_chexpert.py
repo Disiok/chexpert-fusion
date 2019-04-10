@@ -148,13 +148,16 @@ class PairedCheXpertDataset(torch.utils.data.Dataset):
             frontal_image = self.transforms(frontal_image)
             lateral_image = self.transforms(lateral_image)
 
+        root = os.path.dirname(self.root)
         result = {
-            'patient' : patient,
-            'study_id': study_id,
-            'frontal' : frontal_image,
-            'lateral' : lateral_image,
-            'mask'    : masks,
-            'labels'  : labels,
+            'patient'   : patient,
+            'study_id'  : study_id,
+            'frontal'   : frontal_image,
+            'lateral'   : lateral_image,
+            'mask'      : masks,
+            'labels'    : labels,
+            'frontal_fn': os.path.join(root, study['frontal']),
+            'lateral_fn': os.path.join(root, study['lateral']),
         }
         return result
 

@@ -57,7 +57,6 @@ def train_cross_sectional_fusion(argv):
     parser.add_argument('--val-data', type=str, required=True)
     parser.add_argument('--val-batch-size', type=int, default=1)
     parser.add_argument('--shuffle', action='store_true', default=False)
-    parser.add_argument('--map-unobserved-to-negative', action='store_true', default=False)
 
     # Training
     parser.add_argument('--learning-rate', type=float, default=1e-4)
