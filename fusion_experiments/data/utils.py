@@ -14,6 +14,7 @@ import torch.utils.data
 
 from torch.utils.data.dataloader import default_collate
 from data.datasets.paired_chexpert import PairedCheXpertDataset, PairedOnlyCheXpertDataset, PairedOnlyCustomSplit 
+from data.datasets.paired_mimic import PairedMIMICDataset, PairedOnlyMIMICDataset, PairedOnlyCustomSplitMIMIC
 from data.transforms.empty_image_transform import EmptyImageTransform
 from data.transforms.pil_image_transform import PILImageTransform
 
@@ -80,7 +81,10 @@ def make_dataloader(config, mode):
     dataset_class = {
         'PairedCheXpertDataset': PairedCheXpertDataset,
         'PairedOnlyCheXpertDataset': PairedOnlyCheXpertDataset,
-        'PairedOnlyCustomSplit': PairedOnlyCustomSplit
+        'PairedOnlyCustomSplit': PairedOnlyCustomSplit,
+        'PairedMIMICDataset': PairedMIMICDataset,
+        'PairedOnlyMIMICDataset': PairedOnlyMIMICDataset,
+        'PairedOnlyCustomSplitMIMIC': PairedOnlyCustomSplitMIMIC
     }[config[dataset_key]['class']]
 
     dataset = dataset_class(
