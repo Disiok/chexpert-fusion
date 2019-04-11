@@ -6,6 +6,7 @@ python func_run.py train_cross_sectional_attention_fusion \
     --label-class paper \
     --map-unobserved-to-negative \
     --fusion-index 0 \
+    --fusion-operator cross_sectional_attention_correlation \
     --evaluate-once \
     --shuffle \
     --cuda-benchmark \
@@ -16,5 +17,5 @@ python func_run.py train_cross_sectional_attention_fusion \
     --val-batch-size 8 \
     --train-data /home/suo/data/MIMIC-CXR \
     --val-data /home/suo/data/MIMIC-CXR \
-    --outdir /home/suo/experiments/chexpert_attention_fusion_index_0_mlp_valid_mimic/ \
-    --checkpoint /home/suo/experiments/chexpert_attention_fusion_index_0_mlp/models/model_best.pth.tar \
+    --outdir /home/suo/experiments/mimic_valid/cross_sectional_attention_fusion_correlation_0/ \
+    --checkpoint /home/suo/experiments/chexpert_train/cross_sectional_attention_fusion_correlation_0/models/model_best.pth.tar

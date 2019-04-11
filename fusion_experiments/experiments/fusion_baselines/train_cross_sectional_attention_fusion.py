@@ -61,6 +61,7 @@ def train_cross_sectional_fusion(argv):
     # Training
     parser.add_argument('--learning-rate', type=float, default=1e-4)
     parser.add_argument('--fusion-index', type=int, default=0)
+    parser.add_argument('--fusion-operator', type=str, default='cross_sectional_attention')
     parser.add_argument('--normalization', type=str, default='batchnorm2d')
     parser.add_argument('--activation', type=str, default='relu')
     parser.add_argument('--criterion', type=str, default='bce_loss')
@@ -85,10 +86,11 @@ def train_cross_sectional_fusion(argv):
     }
 
     model_configuration = {
-        'class'        : 'cross_sectional_attention_fusion_densenet121_v2',
-        'fusion_index' : args.fusion_index,
-        'normalization': args.normalization,
-        'activation'   : args.activation,
+        'class'          : 'cross_sectional_attention_fusion_densenet121',
+        'fusion_index'   : args.fusion_index,
+        'fusion_operator': args.fusion_operator,
+        'normalization'  : args.normalization,
+        'activation'     : args.activation,
     }
 
     criterion_configuration = {
@@ -105,7 +107,6 @@ def train_cross_sectional_fusion(argv):
 
     train_data_configuration = {
         'class'         : args.dataset_class,
-        'map_unobserved_to_negative': args.map_unobserved_to_negative,
         'batch_size'    : args.train_batch_size,
         'num_workers'   : args.num_workers,
         'pin_memory'    : args.num_gpus > 0,
@@ -140,5 +141,4 @@ def train_cross_sectional_fusion(argv):
 
     trainer = Trainer(configuration)
     trainer.evaluate(args.use_test_set) if args.evaluate_once else trainer.train()
-
 
