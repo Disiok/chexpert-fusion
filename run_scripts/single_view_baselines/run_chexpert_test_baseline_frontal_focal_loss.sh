@@ -6,9 +6,9 @@ python func_run.py train_baselines \
     --label-class paper \
     --view frontal \
     --map-unobserved-to-negative \
-    --val-frequency 1000 \
+    --evaluate-once \
+    --use-test-set \
     --shuffle \
-    --learning-rate 1e-5 \
     --cuda-benchmark \
     --num-gpus 1 \
     --num-epochs 10 \
@@ -17,4 +17,5 @@ python func_run.py train_baselines \
     --val-batch-size 8 \
     --train-data /home/suo/data/CheXpert-v1.0 \
     --val-data /home/suo/data/CheXpert-v1.0 \
-    --outdir /home/suo/experiments/chexpert_baseline_frontal_unobserved_negative_fix
+    --outdir /home/suo/experiments/chexpert_test/baseline_frontal_focal_loss \
+    --checkpoint /home/suo/experiments/chexpert_train/baseline_frontal_focal_loss/models/model_best.pth.tar \

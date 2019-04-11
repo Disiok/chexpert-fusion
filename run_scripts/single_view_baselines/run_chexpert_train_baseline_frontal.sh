@@ -5,6 +5,7 @@ python func_run.py train_baselines \
     --dataset-class PairedOnlyCustomSplit \
     --label-class paper \
     --view frontal \
+    --map-unobserved-to-negative \
     --val-frequency 1000 \
     --shuffle \
     --cuda-benchmark \
@@ -15,4 +16,4 @@ python func_run.py train_baselines \
     --val-batch-size 8 \
     --train-data /home/suo/data/CheXpert-v1.0 \
     --val-data /home/suo/data/CheXpert-v1.0 \
-    --outdir /home/suo/experiments/chexpert_baseline_frontal
+    --outdir /home/suo/experiments/chexpert_train/baseline_frontal/

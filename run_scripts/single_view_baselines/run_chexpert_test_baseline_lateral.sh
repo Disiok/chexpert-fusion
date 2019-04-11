@@ -5,7 +5,8 @@ python func_run.py train_baselines \
     --dataset-class PairedOnlyCustomSplit \
     --label-class paper \
     --view lateral \
-    --val-frequency 1000 \
+    --map-unobserved-to-negative \
+    --evaluate-once \
     --shuffle \
     --cuda-benchmark \
     --num-gpus 1 \
@@ -13,7 +14,7 @@ python func_run.py train_baselines \
     --num-workers 16 \
     --train-batch-size 8 \
     --val-batch-size 8 \
-    --fusion-index 1 \
     --train-data /home/kelvin.wong/Datasets/CheXpert-v1.0 \
     --val-data /home/kelvin.wong/Datasets/CheXpert-v1.0 \
-    --outdir /home/kelvin.wong/experiments/chexpert_baseline_lateral
+    --outdir /home/kelvin.wong/experiments/chexpert_test/baseline_lateral \
+    --checkpoint /home/kelvin.wong/experiments/chexpert_train/baseline_lateral/models/model_best.pth.tar

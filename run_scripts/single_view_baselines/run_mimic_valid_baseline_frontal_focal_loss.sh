@@ -4,11 +4,11 @@ cd /home/suo/dev/chexpert-fusion/fusion_experiments
 python func_run.py train_baselines \
     --dataset-class PairedOnlyMIMICDataset \
     --label-class paper \
-    --view lateral \
+    --view frontal \
     --map-unobserved-to-negative \
     --evaluate-once \
     --shuffle \
-    --learning-rate 1e-5 \
+    --criterion focal_loss \
     --cuda-benchmark \
     --num-gpus 1 \
     --num-epochs 10 \
@@ -17,5 +17,5 @@ python func_run.py train_baselines \
     --val-batch-size 8 \
     --train-data /home/suo/data/MIMIC-CXR \
     --val-data /home/suo/data/MIMIC-CXR \
-    --outdir /home/suo/experiments/chexpert_baseline_lateral_valid_mimic \
-    --checkpoint /home/suo/experiments/chexpert_baseline_lateral_unobserved_negative_fix/models/model_best.pth.tar \
+    --outdir /home/suo/experiments/mimic_valid/baseline_frontal \
+    --checkpoint /home/suo/experiments/chexpert_train/baseline_frontal_focal_loss/models/model_best.pth.tar \

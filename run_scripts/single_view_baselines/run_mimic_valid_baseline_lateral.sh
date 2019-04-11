@@ -1,9 +1,10 @@
 #!/bin/bash
 
-cd /home/suo/dev/chexpert-fusion/fusion_experiments/
-python func_run.py train_fusion_baselines \
+cd /home/suo/dev/chexpert-fusion/fusion_experiments
+python func_run.py train_baselines \
     --dataset-class PairedOnlyMIMICDataset \
     --label-class paper \
+    --view lateral \
     --map-unobserved-to-negative \
     --evaluate-once \
     --shuffle \
@@ -13,8 +14,7 @@ python func_run.py train_fusion_baselines \
     --num-workers 16 \
     --train-batch-size 8 \
     --val-batch-size 8 \
-    --fusion-index 3 \
     --train-data /home/suo/data/MIMIC-CXR \
     --val-data /home/suo/data/MIMIC-CXR \
-    --outdir /home/suo/experiments/fusion_baselines_3_valid_mimic \
-    --checkpoint /home/suo/experiments/chexpert_fusion_baseline_fusion_index_3_1x8_bn_relu_lr_0001_bce_loss/models/model_best.pth.tar
+    --outdir /home/suo/experiments/mimic_valid/baseline_lateral \
+    --checkpoint /home/suo/experiments/chexpert_train/baseline_lateral/models/model_best.pth.tar \
