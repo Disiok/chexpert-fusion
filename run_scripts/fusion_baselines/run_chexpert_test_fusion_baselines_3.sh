@@ -14,8 +14,8 @@ python func_run.py train_fusion_baselines \
     --num-workers 16 \
     --train-batch-size 8 \
     --val-batch-size 8 \
-    --fusion-index 0 \
+    --fusion-index 3 \
     --train-data /home/suo/data/CheXpert-v1.0 \
     --val-data /home/suo/data/CheXpert-v1.0 \
-    --outdir /home/suo/experiments/fusion_baselines_0_test \
-    --checkpoint /home/suo/experiments/chexpert_fusion_baseline_fusion_index_0_1x8_bn_relu_lr_0001_bce_loss/models/model_best.pth.tar
+    --outdir /home/suo/experiments/chexpert_test/fusion_baselines_3 \
+    --checkpoint /home/suo/experiments/chexpert_train/fusion_baselines_3/models/model_best.pth.tar

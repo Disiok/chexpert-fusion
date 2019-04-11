@@ -2,11 +2,10 @@
 
 cd /home/suo/dev/chexpert-fusion/fusion_experiments/
 python func_run.py train_fusion_baselines \
-    --dataset-class PairedOnlyCustomSplit \
+    --dataset-class PairedOnlyMIMICDataset \
     --label-class paper \
     --map-unobserved-to-negative \
     --evaluate-once \
-    --use-test-set \
     --shuffle \
     --cuda-benchmark \
     --num-gpus 1 \
@@ -15,7 +14,7 @@ python func_run.py train_fusion_baselines \
     --train-batch-size 8 \
     --val-batch-size 8 \
     --fusion-index 3 \
-    --train-data /home/suo/data/CheXpert-v1.0 \
-    --val-data /home/suo/data/CheXpert-v1.0 \
-    --outdir /home/suo/experiments/fusion_baselines_3_test \
-    --checkpoint /home/suo/experiments/chexpert_fusion_baseline_fusion_index_3_1x8_bn_relu_lr_0001_bce_loss/models/model_best.pth.tar
+    --train-data /home/suo/data/MIMIC-CXR \
+    --val-data /home/suo/data/MIMIC-CXR \
+    --outdir /home/suo/experiments/valid_mimic/fusion_baselines_3 \
+    --checkpoint /home/suo/experiments/chexpert_train/fusion_baselines_3/models/model_best.pth.tar
