@@ -15,5 +15,5 @@ python func_run.py train_volumetric_fusion \
     --val-batch-size 6 \
     --train-data /home/suo/data/MIMIC-CXR \
     --val-data /home/suo/data/MIMIC-CXR \
-    --outdir /home/suo/experiments/chexpert_volumetric_fusion_valid_mimic \
-    --checkpoint /home/suo/experiments/chexpert_volumetric_fusion_unobserved_negative/models/model_best.pth.tar
+    --outdir /home/suo/experiments/mimic_valid/volumetric_fusion \
+    --checkpoint /home/suo/experiments/chexpert_train/volumetric_fusion/models/model_best.pth.tar

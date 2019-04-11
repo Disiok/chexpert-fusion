@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd /mnt/yyz_data_1/users/suo/dev/chexpert-fusion/fusion_experiments
+cd /home/kelvin.wong/Developer/chexpert-fusion/fusion_experiments/
 python func_run.py train_volumetric_fusion \
     --dataset-class PairedOnlyCustomSplit \
     --label-class paper \
@@ -11,8 +11,9 @@ python func_run.py train_volumetric_fusion \
     --num-gpus 1 \
     --num-epochs 10 \
     --num-workers 16 \
+    --use-2d-conv \
     --train-batch-size 6 \
     --val-batch-size 6 \
-    --train-data /home/suo/data/CheXpert-v1.0 \
-    --val-data /home/suo/data/CheXpert-v1.0 \
-    --outdir /home/suo/experiments/chexpert_volumetric_fusion_unobserved_negative
+    --train-data /home/kelvin.wong/Datasets/CheXpert-v1.0 \
+    --val-data /home/kelvin.wong/Datasets/CheXpert-v1.0 \
+    --outdir /home/kelvin.wong/experiments/chexpert_train/volumetric_fusion_2d/

@@ -6,8 +6,8 @@ python func_run.py train_volumetric_fusion \
     --label-class paper \
     --map-unobserved-to-negative \
     --evaluate-once \
-    --val-frequency 1000 \
     --shuffle \
+    --is-big \
     --cuda-benchmark \
     --num-gpus 1 \
     --num-epochs 10 \
@@ -16,5 +16,5 @@ python func_run.py train_volumetric_fusion \
     --val-batch-size 6 \
     --train-data /home/suo/data/MIMIC-CXR \
     --val-data /home/suo/data/MIMIC-CXR \
-    --outdir /home/suo/experiments/chexpert_volumetric_fusion_big_valid_mimic \
-    --checkpoint /home/suo/experiments/chexpert_volumetric_fusion_unobserved_negative_big/models/model_best.pth.tar
+    --outdir /home/suo/experiments/mimic_valid/volumetric_fusion_big \
+    --checkpoint /home/suo/experiments/chexpert_train/volumetric_fusion_big/models/model_best.pth.tar

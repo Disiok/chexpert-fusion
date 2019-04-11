@@ -61,6 +61,7 @@ def train_volumetric_fusion(argv):
     # Training
     parser.add_argument('--learning-rate', type=float, default=1e-4)
     parser.add_argument('--fusion-index', type=int, default=-1)
+    parser.add_argument('--is-big', action='store_true', default=False)
     parser.add_argument('--use-2d-conv', action='store_true', default=False)
     parser.add_argument('--normalization', type=str, default='batchnorm2d')
     parser.add_argument('--activation', type=str, default='relu')
@@ -91,6 +92,7 @@ def train_volumetric_fusion(argv):
         'normalization': args.normalization,
         'activation'   : args.activation,
         'use_2d_conv'  : args.use_2d_conv,
+        'is_big'       : args.use_2d_conv,
     }
 
     criterion_configuration = {

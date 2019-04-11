@@ -5,8 +5,10 @@ python func_run.py train_volumetric_fusion \
     --dataset-class PairedOnlyCustomSplit \
     --label-class paper \
     --map-unobserved-to-negative \
-    --val-frequency 1000 \
+    --evaluate-once \
+    --use-test-set \
     --shuffle \
+    --is-big \
     --cuda-benchmark \
     --num-gpus 1 \
     --num-epochs 10 \
@@ -15,4 +17,5 @@ python func_run.py train_volumetric_fusion \
     --val-batch-size 6 \
     --train-data /home/suo/data/CheXpert-v1.0 \
     --val-data /home/suo/data/CheXpert-v1.0 \
-    --outdir /home/suo/experiments/chexpert_volumetric_fusion_unobserved_negative_big
+    --outdir /home/suo/experiments/chexpert_test/volumetric_fusion_big \
+    --checkpoint /home/suo/experiments/chexpert_train/volumetric_fusion_big/models/model_best.pth.tar
