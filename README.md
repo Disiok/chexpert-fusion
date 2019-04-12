@@ -3,3 +3,4 @@
 
 - Jupyter notebooks can be found under `notebooks` directory.
 - All experimental code can be found under `fusion_experiments` directory.
+- Scripts to run experiments can be found under `run_scripts` directory.
