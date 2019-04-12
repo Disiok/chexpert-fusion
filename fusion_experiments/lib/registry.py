@@ -26,7 +26,7 @@ class Registry(dict):
 
         def _register(fn):
             self[module_name] = fn
-            return
+            return fn
 
         return _register
 

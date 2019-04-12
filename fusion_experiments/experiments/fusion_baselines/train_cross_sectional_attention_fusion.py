@@ -29,7 +29,7 @@ CLASSES = {
 
 
 @registry.EXPERIMENTS.register('train_cross_sectional_attention_fusion')
-def train_cross_sectional_fusion(argv):
+def train_cross_sectional_attention_fusion(argv):
     """
     Run fusion baseline experiments.
 
@@ -61,7 +61,7 @@ def train_cross_sectional_fusion(argv):
     # Training
     parser.add_argument('--learning-rate', type=float, default=1e-4)
     parser.add_argument('--fusion-index', type=int, default=0)
-    parser.add_argument('--fusion-operator', type=str, default='cross_sectional_attention')
+    parser.add_argument('--fusion-operator', type=str, default='cross_sectional_attention_mlp')
     parser.add_argument('--normalization', type=str, default='batchnorm2d')
     parser.add_argument('--activation', type=str, default='relu')
     parser.add_argument('--criterion', type=str, default='bce_loss')
@@ -140,5 +140,5 @@ def train_cross_sectional_fusion(argv):
     }
 
     trainer = Trainer(configuration)
-    trainer.evaluate(args.use_test_set) if args.evaluate_once else trainer.train()
+    return trainer.evaluate(args.use_test_set) if args.evaluate_once else trainer.train()
 

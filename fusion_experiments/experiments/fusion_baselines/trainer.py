@@ -255,7 +255,8 @@ class Trainer(object):
 
 
         """
-        self.val_single_epoch(use_test_set=use_test_set)
+        metrics = self.val_single_epoch(use_test_set=use_test_set)
+        return metrics
 
     def train_single_epoch(self):
         """
@@ -283,6 +284,7 @@ class Trainer(object):
                 self.val_single_epoch()
 
         self.train_epoch += 1
+        return None
 
     def _train_single_step(self, batch):
         """
@@ -382,6 +384,12 @@ class Trainer(object):
         self.val_epoch += 1
         self._log_val_epoch()
         self._save_checkpoint(self.auc_meter.values()['mean'])
+
+        metrics = {
+            'pr_meter' : self.pr_meter,
+            'roc_meter': self.auc_meter,
+        }
+        return metrics
 
     def _val_single_step(self, batch):
         """

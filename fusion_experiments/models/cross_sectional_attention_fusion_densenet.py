@@ -43,6 +43,10 @@ class CrossSectionalAttentionFusionDenseNet(nn.Module):
         self.final_norm_frontal = nn.BatchNorm2d(self.frontal_stream.num_features[-1])
         self.classifier_frontal = nn.Linear(self.frontal_stream.num_features[-1], num_classes)
 
+        if fusion_index == 4:
+            self.final_norm_lateral = nn.BatchNorm2d(self.lateral_stream.num_features[-1])
+            self.classifier_lateral = nn.Linear(self.lateral_stream.num_features[-1], num_classes)
+
         # Official init from torch repo.
         for m in self.modules():
             if isinstance(m, nn.Conv2d):

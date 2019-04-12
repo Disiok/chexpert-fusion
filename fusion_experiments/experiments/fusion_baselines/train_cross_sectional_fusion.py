@@ -138,4 +138,4 @@ def train_cross_sectional_fusion(argv):
     }
 
     trainer = Trainer(configuration)
-    trainer.evaluate(args.use_test_set) if args.evaluate_once else trainer.train()
+    return trainer.evaluate(args.use_test_set) if args.evaluate_once else trainer.train()

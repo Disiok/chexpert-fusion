@@ -107,7 +107,6 @@ def train_baselines(argv):
 
     train_data_configuration = {
         'class'         : args.dataset_class,
-        'map_unobserved_to_negative': args.map_unobserved_to_negative,
         'batch_size'    : args.train_batch_size,
         'num_workers'   : args.num_workers,
         'pin_memory'    : args.num_gpus > 0,
@@ -116,6 +115,7 @@ def train_baselines(argv):
         'image_size'    : 320,
         'normalize_mean': [0.485, 0.456, 0.406],
         'normalize_std' : [0.299, 0.224, 0.224],
+        'map_unobserved_to_negative': args.map_unobserved_to_negative,
     }
 
     val_data_configuration = copy.deepcopy(train_data_configuration)
@@ -140,5 +140,5 @@ def train_baselines(argv):
     }
 
     trainer = Trainer(configuration)
-    trainer.evaluate(args.use_test_set) if args.evaluate_once else trainer.train()
+    return trainer.evaluate(args.use_test_set) if args.evaluate_once else trainer.train()
 
