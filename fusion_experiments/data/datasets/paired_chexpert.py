@@ -42,6 +42,8 @@ def load_studies(root, mode, class_names, paired_only, map_unobserved_to_negativ
             masks    (np.array): [14] binary mask array.
             labels   (np.array): [14] binary label array.
     """
+    if mode == 'test':
+        mode = 'valid'
     dataset_df = pd.read_csv(os.path.join(root, '{}.csv'.format(mode)))
     if map_unobserved_to_negative:
         dataset_df = dataset_df.fillna(0.)
@@ -156,8 +158,8 @@ class PairedCheXpertDataset(torch.utils.data.Dataset):
             'lateral'   : lateral_image,
             'mask'      : masks,
             'labels'    : labels,
-            'frontal_fn': os.path.join(root, study['frontal']),
-            'lateral_fn': os.path.join(root, study['lateral']),
+            'frontal_fn': os.path.join(root, study['frontal']) if study['lateral'] else None,
+            'lateral_fn': os.path.join(root, study['lateral']) if study['lateral'] else None,
         }
         return result
 
